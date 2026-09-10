@@ -95,11 +95,6 @@ export default function LoginCard() {
           <span>Restricted to authorized team members</span>
         </div>
       </div>
-
-      {/* Footer */}
-      <p className="mt-6 text-center text-xs text-white/50 font-medium tracking-wide">
-        TeamSync 📅 © 2026 · Omor Faruk
-      </p>
     </div>
   );
 }
