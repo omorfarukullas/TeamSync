@@ -22,7 +22,7 @@ export default async function LoginPage() {
         <LoginCard />
 
         <footer className="mt-8 text-center text-xs text-navy-200/70 font-medium">
-          TeamSync 📅 &copy; {new Date().getFullYear()} &middot; University Team Scheduler
+          TeamSync 📅 &copy; {new Date().getFullYear()} &middot; Omor Faruk
         </footer>
       </div>
     </main>
