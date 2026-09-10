@@ -45,7 +45,7 @@ export default function MemberStatusBar({
           return (
             <div
               key={member.id}
-              className={`relative flex flex-col items-center p-3.5 sm:p-4 rounded-2xl border transition-all ${
+              className={`relative flex flex-col items-center p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md ${
                 isSelf
                   ? 'bg-navy-50/70 border-navy-200 shadow-sm'
                   : 'bg-slate-50/60 border-slate-200/70 hover:bg-slate-50'

@@ -40,9 +40,9 @@ export default function MobileTabBar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all relative ${
+              className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl transition-all duration-150 ease-out active:scale-90 select-none relative ${
                 isActive
-                  ? 'text-navy-700 font-bold bg-navy-50/70'
+                  ? 'text-navy-700 font-bold bg-navy-50/80 shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 font-medium'
               }`}
             >

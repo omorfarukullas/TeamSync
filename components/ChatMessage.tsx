@@ -31,7 +31,7 @@ export default function ChatMessage({
 
   return (
     <div
-      className={`flex items-end gap-2.5 my-3.5 ${
+      className={`flex items-end gap-2.5 my-3.5 animate-fade-in-up ${
         isSelf ? 'justify-end flex-row-reverse' : 'justify-start'
       }`}
     >

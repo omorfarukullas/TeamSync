@@ -273,7 +273,7 @@ export default function ChatView({
           <button
             type="submit"
             disabled={!inputText.trim() || isSending}
-            className="p-3 sm:px-4 bg-[#1F4E79] hover:bg-[#163a5c] text-white font-bold rounded-2xl shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 flex-shrink-0"
+            className="p-3 sm:px-4 bg-[#1F4E79] hover:bg-[#163a5c] active:scale-95 text-white font-bold rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 flex-shrink-0"
           >
             <Send className="w-4 h-4" />
             <span className="hidden sm:inline text-xs">Send</span>

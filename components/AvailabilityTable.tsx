@@ -101,13 +101,14 @@ export default function AvailabilityTable({
         throw new Error(result.error || 'Failed to save');
       }
 
-      toast.success(`Saved ✓ (${day} ${timeSlot})`, {
-        duration: 2000,
+      toast.success(`Saved (${day} ${timeSlot})`, {
+        id: 'slot-saved',
+        duration: 1500,
       });
     } catch (err: any) {
       console.error('Error saving status:', err);
       setRecords(previousRecords);
-      toast.error('Failed to save availability. Please try again.');
+      toast.error('Failed to save availability. Please try again.', { id: 'slot-saved' });
     } finally {
       setSavingKey(null);
     }

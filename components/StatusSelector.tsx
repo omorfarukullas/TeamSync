@@ -56,19 +56,19 @@ export default function StatusSelector({
             type="button"
             disabled={disabled}
             onClick={() => onChange && onChange(status)}
-            className={`flex items-center justify-center gap-1.5 rounded-lg font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 rounded-xl font-bold transition-all duration-150 ease-out active:scale-90 active:opacity-90 select-none ${
               fullWidth
                 ? 'flex-1 py-2.5 px-1.5 text-xs min-h-[44px]'
                 : size === 'sm'
                 ? 'px-2 py-1 text-xs'
-                : 'px-2.5 py-1.5 text-xs sm:text-sm'
+                : 'px-3 py-1.5 text-xs sm:text-sm'
             } ${
               isSelected
-                ? `${config.bgClass} ${config.textClass} border-2 ${config.borderClass} shadow-sm scale-[1.01]`
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent'
+                ? `${config.bgClass} ${config.textClass} border-2 ${config.borderClass} shadow-xs scale-[1.02] ring-2 ring-navy-600/10`
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/90 hover:scale-[1.02] border border-transparent'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <span className="text-sm">{config.emoji}</span>
+            <span className="text-sm transition-transform duration-150 group-active:scale-110">{config.emoji}</span>
             <span className={fullWidth ? 'inline text-[11px] sm:text-xs leading-none' : 'hidden sm:inline'}>
               {config.label}
             </span>
