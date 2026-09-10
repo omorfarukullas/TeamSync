@@ -9,12 +9,18 @@ interface TeamTableProps {
   members: Member[];
   slotScores: SlotScore[];
   bestScore: number;
+  currentUserImage?: string;
+  currentMemberId?: string;
+  onlineMemberIds?: Set<string>;
 }
 
 export default function TeamTable({
   members,
   slotScores,
   bestScore,
+  currentUserImage,
+  currentMemberId,
+  onlineMemberIds,
 }: TeamTableProps) {
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>(
     DAYS.reduce((acc, day) => ({ ...acc, [day]: true }), {})
@@ -230,19 +236,48 @@ export default function TeamTable({
                 <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-44 border-r border-navy-800">
                   Time Slot
                 </th>
-                {members.map((member) => (
-                  <th
-                    key={member.id}
-                    className="py-3.5 px-3 text-xs font-bold uppercase tracking-wider text-center border-r border-navy-800 min-w-[90px]"
-                  >
-                    <div className="flex flex-col items-center">
-                      <span className="truncate max-w-[80px]">{member.name}</span>
-                      <span className="text-[10px] font-normal text-navy-200 lowercase">
-                        {member.id}
-                      </span>
-                    </div>
-                  </th>
-                ))}
+                {members.map((member) => {
+                  const isSelf = member.id === currentMemberId;
+                  const isOnline = isSelf || (onlineMemberIds ? onlineMemberIds.has(member.id) : false);
+                  const avatarUrl = (isSelf && currentUserImage) ? currentUserImage : (member.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`);
+
+                  return (
+                    <th
+                      key={member.id}
+                      className="py-3 px-3 text-xs font-bold uppercase tracking-wider text-center border-r border-navy-800 min-w-[100px]"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        {/* Member Avatar Thumbnail with Online Dot */}
+                        <div className="relative">
+                          <img
+                            src={avatarUrl}
+                            alt={member.name}
+                            className="w-7 h-7 rounded-full object-cover ring-2 ring-white/70 shadow-xs bg-slate-100"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (!target.src.includes('dicebear')) {
+                                target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`;
+                              }
+                            }}
+                          />
+                          <span
+                            title={isOnline ? `${member.name} is Online` : `${member.name} is Offline`}
+                            className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-1 ring-white shadow-xs ${
+                              isOnline ? 'bg-emerald-400' : 'bg-slate-400'
+                            }`}
+                          />
+                        </div>
+
+                        <span className="truncate max-w-[85px] leading-tight font-extrabold text-white">
+                          {member.name}
+                        </span>
+                        <span className="text-[10px] font-medium text-navy-200 lowercase">
+                          {isSelf ? '(you)' : member.id}
+                        </span>
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider text-center w-28">
                   Score (0-8)
                 </th>

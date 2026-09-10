@@ -15,12 +15,14 @@ interface TeamViewProps {
   initialMembers: Member[];
   initialAvailability: AvailabilityRecord[];
   currentMemberId?: string;
+  currentUserImage?: string;
 }
 
 export default function TeamView({
   initialMembers,
   initialAvailability,
   currentMemberId,
+  currentUserImage,
 }: TeamViewProps) {
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [availability, setAvailability] = useState<AvailabilityRecord[]>(initialAvailability);
@@ -29,12 +31,15 @@ export default function TeamView({
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
   const { onlineMemberIds } = usePresence();
 
-  // Fetch latest availability from API
+  // Fetch latest availability and members from API
   const refreshData = useCallback(async (showToast = false) => {
     try {
       setIsRefreshing(true);
-      const res = await fetch('/api/availability');
-      const json = await res.json();
+      const [availRes, memRes] = await Promise.all([
+        fetch('/api/availability'),
+        fetch('/api/members').catch(() => null),
+      ]);
+      const json = await availRes.json();
       if (json.success && Array.isArray(json.data)) {
         setAvailability(json.data);
         setLastUpdated(new Date());
@@ -42,12 +47,24 @@ export default function TeamView({
           toast.success('Team availability updated!');
         }
       }
+      if (memRes && memRes.ok) {
+        const memJson = await memRes.json();
+        if (memJson.success && Array.isArray(memJson.data)) {
+          const updated = memJson.data.map((m: Member) => {
+            if (m.id === currentMemberId && currentUserImage) {
+              return { ...m, avatar_url: currentUserImage };
+            }
+            return m;
+          });
+          setMembers(updated);
+        }
+      }
     } catch (err) {
       console.error('Error refreshing team data:', err);
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
+  }, [currentMemberId, currentUserImage]);
 
   // Supabase Realtime Subscription
   useEffect(() => {
@@ -148,6 +165,7 @@ export default function TeamView({
         members={members}
         availability={availability}
         currentMemberId={currentMemberId}
+        currentUserImage={currentUserImage}
         onlineMemberIds={onlineMemberIds}
       />
 
@@ -157,11 +175,14 @@ export default function TeamView({
         totalMembersCount={members.length}
       />
 
-      {/* C. Full 25-Row Comparison Table */}
+      {/* C. Full Comparison Table */}
       <TeamTable
         members={members}
         slotScores={slotScores}
         bestScore={bestScore}
+        currentUserImage={currentUserImage}
+        currentMemberId={currentMemberId}
+        onlineMemberIds={onlineMemberIds}
       />
     </div>
   );

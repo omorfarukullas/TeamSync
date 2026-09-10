@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
+import { updateMemberAvatar } from '@/lib/supabase-server';
 import Navbar from '@/components/Navbar';
 import MobileTabBar from '@/components/MobileTabBar';
 import PresenceTracker from '@/components/PresenceTracker';
@@ -13,6 +14,11 @@ export default async function DashboardLayout({
 
   if (!session?.user) {
     redirect('/');
+  }
+
+  // Automatically sync Google account avatar to database if available
+  if (session.user.email && session.user.image) {
+    updateMemberAvatar(session.user.email, session.user.image).catch(() => {});
   }
 
   return (

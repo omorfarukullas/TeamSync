@@ -7,6 +7,7 @@ interface MemberStatusBarProps {
   members: Member[];
   availability: AvailabilityRecord[];
   currentMemberId?: string;
+  currentUserImage?: string;
   onlineMemberIds?: Set<string>;
 }
 
@@ -14,6 +15,7 @@ export default function MemberStatusBar({
   members,
   availability,
   currentMemberId,
+  currentUserImage,
   onlineMemberIds,
 }: MemberStatusBarProps) {
   return (
@@ -38,6 +40,7 @@ export default function MemberStatusBar({
           const isOnline = isSelf || (onlineMemberIds ? onlineMemberIds.has(member.id) : false);
 
           const initial = member.name.charAt(0).toUpperCase();
+          const avatarUrl = (isSelf && currentUserImage) ? currentUserImage : (member.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`);
 
           return (
             <div
@@ -57,17 +60,18 @@ export default function MemberStatusBar({
 
               {/* Avatar Circle with Online/Offline Status Dot */}
               <div className="relative mb-3 group cursor-default">
-                {member.avatar_url ? (
-                  <img
-                    src={member.avatar_url}
-                    alt={member.name}
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-3 ring-white shadow-md"
-                  />
-                ) : (
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-navy-800 to-navy-600 text-white flex items-center justify-center text-xl font-black shadow-md ring-3 ring-white">
-                    {initial}
-                  </div>
-                )}
+                <img
+                  src={avatarUrl}
+                  alt={member.name}
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-3 ring-white shadow-md bg-slate-100"
+                  onError={(e) => {
+                    // Fallback to DiceBear if Google DP fails or initial
+                    const target = e.currentTarget;
+                    if (!target.src.includes('dicebear')) {
+                      target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`;
+                    }
+                  }}
+                />
 
                 {/* 🟢 Online (Green) / ⚫ Offline (Grey) Indicator Dot */}
                 <span

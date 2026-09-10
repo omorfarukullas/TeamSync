@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, getMemberByEmail } from '@/lib/auth';
-import { getPresenceRecords, upsertPresence } from '@/lib/supabase-server';
+import { getPresenceRecords, upsertPresence, updateMemberAvatar } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
 
     const member = getMemberByEmail(session.user.email);
     const memberId = (session.user as any).memberId || member.id;
+
+    if (session.user.image) {
+      updateMemberAvatar(session.user.email, session.user.image).catch(() => {});
+    }
 
     const result = await upsertPresence(memberId);
     if (!result.success) {
