@@ -1,7 +1,7 @@
 'use client';
 
 import { Member, AvailabilityRecord } from '@/lib/types';
-import { countMemberFilledSlots } from '@/lib/constants';
+import { countMemberFilledSlots, TOTAL_SLOTS } from '@/lib/constants';
 
 interface MemberStatusBarProps {
   members: Member[];
@@ -33,7 +33,7 @@ export default function MemberStatusBar({
         {members.map((member) => {
           const filledCount = countMemberFilledSlots(member.id, availability);
           const hasFilledAtLeastOne = filledCount > 0;
-          const isComplete = filledCount >= 25;
+          const isComplete = filledCount >= TOTAL_SLOTS;
           const isSelf = member.id === currentMemberId;
           const isOnline = isSelf || (onlineMemberIds ? onlineMemberIds.has(member.id) : false);
 
@@ -98,7 +98,7 @@ export default function MemberStatusBar({
                       : 'bg-slate-200 text-slate-600'
                   }`}
                 >
-                  {filledCount} / 25 slots
+                  {filledCount} / {TOTAL_SLOTS} slots
                 </span>
               </div>
             </div>

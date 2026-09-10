@@ -3,6 +3,7 @@
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useEffect, useRef } from 'react';
+import { TOTAL_SLOTS } from '@/lib/constants';
 
 interface ProgressCounterProps {
   filledCount: number;
@@ -13,7 +14,7 @@ interface ProgressCounterProps {
 
 export default function ProgressCounter({
   filledCount,
-  totalCount = 25,
+  totalCount = TOTAL_SLOTS,
   memberName = 'Your',
   isSelf = true,
 }: ProgressCounterProps) {

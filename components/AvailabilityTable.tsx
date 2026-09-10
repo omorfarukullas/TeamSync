@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { DAYS, TIME_SLOTS, STATUS_CONFIG } from '@/lib/constants';
+import { DAYS, TIME_SLOTS, STATUS_CONFIG, TOTAL_SLOTS } from '@/lib/constants';
 import { AvailabilityRecord, AvailabilityStatus, Member } from '@/lib/types';
 import StatusSelector from './StatusSelector';
 import ProgressCounter from './ProgressCounter';
@@ -187,7 +187,7 @@ export default function AvailabilityTable({
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
             {isSelf
-              ? 'Click a status to immediately save your schedule. All 25 slots are required.'
+              ? `Click a status to immediately save your schedule. All ${TOTAL_SLOTS} slots are required.`
               : `Viewing ${selectedMember.name}'s schedule (Read-only).`}
           </p>
         </div>
@@ -225,7 +225,7 @@ export default function AvailabilityTable({
       {/* Progress Counter Card */}
       <ProgressCounter
         filledCount={filledCount}
-        totalCount={25}
+        totalCount={TOTAL_SLOTS}
         memberName={selectedMember.name}
         isSelf={isSelf}
       />
@@ -271,12 +271,12 @@ export default function AvailabilityTable({
                   <span className="font-extrabold text-base tracking-tight">{day}</span>
                   <span
                     className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                      daySlotsFilled === 5
+                      daySlotsFilled === TIME_SLOTS.length
                         ? 'bg-emerald-500 text-white'
                         : 'bg-white/20 text-navy-100'
                     }`}
                   >
-                    {daySlotsFilled}/5 Set
+                    {daySlotsFilled}/{TIME_SLOTS.length} Set
                   </span>
                 </div>
                 <div className="text-white/80">
@@ -433,13 +433,13 @@ export default function AvailabilityTable({
                       {/* Day Column (merged/rowspan=5 for first slot of the day) */}
                       {slotIndex === 0 && (
                         <td
-                          rowSpan={5}
+                          rowSpan={TIME_SLOTS.length}
                           className="py-4 px-4 bg-[#1F4E79] text-white font-extrabold text-base align-middle text-center border-r border-navy-800 border-b-2 border-b-white/20 select-none"
                         >
                           <div className="flex flex-col items-center justify-center gap-1">
                             <span>{day}</span>
                             <span className="text-[10px] font-medium text-navy-200 uppercase tracking-widest bg-navy-900/60 px-2 py-0.5 rounded-full">
-                              5 Slots
+                              {TIME_SLOTS.length} Slots
                             </span>
                           </div>
                         </td>

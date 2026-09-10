@@ -16,11 +16,12 @@ export const TIME_SLOTS = [
   '11:11 AM–12:30 PM',
   '12:31–1:50 PM',
   '1:51–3:10 PM',
+  '3:11–4:30 PM',
 ] as const;
 
 export type TimeSlot = typeof TIME_SLOTS[number];
 
-export const TOTAL_SLOTS = DAYS.length * TIME_SLOTS.length; // 25 slots
+export const TOTAL_SLOTS = DAYS.length * TIME_SLOTS.length; // 30 slots (5 days x 6 slots)
 
 export const STATUS_CONFIG: Record<
   AvailabilityStatus,

@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS availability (
     '9:11–11:10 AM',
     '11:11 AM–12:30 PM',
     '12:31–1:50 PM',
-    '1:51–3:10 PM'
+    '1:51–3:10 PM',
+    '3:11–4:30 PM'
   )),
   status      TEXT NOT NULL CHECK (status IN (
     'available', 'not_available', 'maybe'

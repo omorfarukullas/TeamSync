@@ -265,16 +265,16 @@ export default function TeamTable({
                           : 'hover:bg-slate-50/80'
                       }`}
                     >
-                      {/* Day Column (rowspan 5, navy background) */}
+                      {/* Day Column (dynamic rowspan, navy background) */}
                       {slotIndex === 0 && (
                         <td
-                          rowSpan={5}
+                          rowSpan={TIME_SLOTS.length}
                           className="py-4 px-4 bg-[#1F4E79] text-white font-extrabold text-base align-middle text-center border-r border-navy-800 border-b-2 border-b-white/20 select-none"
                         >
                           <div className="flex flex-col items-center justify-center gap-1">
                             <span>{day}</span>
                             <span className="text-[10px] font-medium text-navy-200 uppercase tracking-widest bg-navy-900/60 px-2 py-0.5 rounded-full">
-                              5 Slots
+                              {TIME_SLOTS.length} Slots
                             </span>
                           </div>
                         </td>
