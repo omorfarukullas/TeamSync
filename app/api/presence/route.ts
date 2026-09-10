@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: records });
   } catch (error: any) {
     console.error('API GET /presence error:', error);
-    return NextResponse.json({ error: error?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Server error', stack: error?.stack }, { status: 500 });
   }
 }
 
@@ -37,6 +37,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, memberId });
   } catch (error: any) {
     console.error('API POST /presence error:', error);
-    return NextResponse.json({ error: error?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Server error', stack: error?.stack }, { status: 500 });
   }
 }

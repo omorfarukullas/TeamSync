@@ -60,8 +60,9 @@ export default function TeamView({
       return () => clearInterval(pollInterval);
     }
 
+    const channelId = `avail-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabaseClient
-      .channel('realtime:team-availability')
+      .channel(channelId)
       .on(
         'postgres_changes',
         {

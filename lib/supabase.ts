@@ -26,6 +26,11 @@ export function getSupabaseBrowserClient(): SupabaseClient | null {
           eventsPerSecond: 10,
         },
       },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
     });
     return browserClient;
   } catch (error) {
@@ -34,15 +39,5 @@ export function getSupabaseBrowserClient(): SupabaseClient | null {
   }
 }
 
-export const supabase = (function () {
-  if (
-    typeof window !== 'undefined' &&
-    supabaseUrl &&
-    supabaseAnonKey &&
-    !supabaseUrl.includes('your-project') &&
-    !supabaseAnonKey.includes('your_supabase_anon_key')
-  ) {
-    return createClient(supabaseUrl, supabaseAnonKey);
-  }
-  return null;
-})();
+export const supabase = typeof window !== 'undefined' ? getSupabaseBrowserClient() : null;
+

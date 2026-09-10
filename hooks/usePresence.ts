@@ -65,8 +65,9 @@ export function usePresence() {
     let channel: any = null;
 
     if (supabaseClient) {
+      const channelId = `presence-${Math.random().toString(36).substring(2, 9)}`;
       channel = supabaseClient
-        .channel('realtime:presence')
+        .channel(channelId)
         .on(
           'postgres_changes',
           {

@@ -64,8 +64,9 @@ export default function ChatView({
       return () => clearInterval(pollInterval);
     }
 
+    const channelId = `chat-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabaseClient
-      .channel('realtime:team-chat')
+      .channel(channelId)
       .on(
         'postgres_changes',
         {
