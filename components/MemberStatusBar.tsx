@@ -1,0 +1,107 @@
+'use client';
+
+import { Member, AvailabilityRecord } from '@/lib/types';
+import { countMemberFilledSlots } from '@/lib/constants';
+
+interface MemberStatusBarProps {
+  members: Member[];
+  availability: AvailabilityRecord[];
+  currentMemberId?: string;
+}
+
+export default function MemberStatusBar({
+  members,
+  availability,
+  currentMemberId,
+}: MemberStatusBarProps) {
+  return (
+    <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-500">
+            Team Member Status
+          </h2>
+          <p className="text-xs text-slate-400 font-medium">
+            Live schedule submission tracking for all 4 members
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        {members.map((member) => {
+          const filledCount = countMemberFilledSlots(member.id, availability);
+          const hasFilledAtLeastOne = filledCount > 0;
+          const isComplete = filledCount >= 25;
+          const isSelf = member.id === currentMemberId;
+
+          const initial = member.name.charAt(0).toUpperCase();
+
+          return (
+            <div
+              key={member.id}
+              className={`relative flex flex-col items-center p-3.5 sm:p-4 rounded-2xl border transition-all ${
+                isSelf
+                  ? 'bg-navy-50/70 border-navy-200 shadow-sm'
+                  : 'bg-slate-50/60 border-slate-200/70 hover:bg-slate-50'
+              }`}
+            >
+              {/* Self Badge */}
+              {isSelf && (
+                <span className="absolute top-2 right-2 text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-navy-700 text-white shadow-xs">
+                  You
+                </span>
+              )}
+
+              {/* Avatar Circle with Status Dot */}
+              <div className="relative mb-3 group cursor-default">
+                {member.avatar_url ? (
+                  <img
+                    src={member.avatar_url}
+                    alt={member.name}
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-3 ring-white shadow-md"
+                  />
+                ) : (
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-navy-800 to-navy-600 text-white flex items-center justify-center text-xl font-black shadow-md ring-3 ring-white">
+                    {initial}
+                  </div>
+                )}
+
+                {/* 🟢 / ⚫ Indicator Dot */}
+                <span
+                  title={hasFilledAtLeastOne ? 'Active (slots filled)' : 'Not started yet'}
+                  className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ring-2 ring-white shadow-sm flex items-center justify-center ${
+                    hasFilledAtLeastOne ? 'bg-emerald-500' : 'bg-slate-400'
+                  }`}
+                >
+                  {hasFilledAtLeastOne && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                  )}
+                </span>
+              </div>
+
+              {/* Member Name */}
+              <span className="font-bold text-slate-800 text-sm sm:text-base text-center truncate max-w-full">
+                {member.name}
+              </span>
+
+              {/* Progress Count Pill / Hover Tooltip */}
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <span
+                  className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                    isComplete
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : hasFilledAtLeastOne
+                      ? 'bg-navy-100 text-navy-800 border border-navy-200'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {filledCount} / 25 slots
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
