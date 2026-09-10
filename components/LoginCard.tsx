@@ -2,13 +2,10 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { DEFAULT_MEMBERS } from '@/lib/constants';
 import { Calendar, Users, MessageSquare, Sparkles, Loader2, ShieldCheck } from 'lucide-react';
 
 export default function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState<string | null>(null);
-  const [showDemoSelector, setShowDemoSelector] = useState(false);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -17,19 +14,6 @@ export default function LoginCard() {
     } catch (error) {
       console.error('Sign-in error:', error);
       setIsLoading(false);
-    }
-  };
-
-  const handleDemoSignIn = async (email: string) => {
-    try {
-      setDemoLoading(email);
-      await signIn('demo-login', {
-        email,
-        callbackUrl: '/dashboard',
-      });
-    } catch (error) {
-      console.error('Demo sign-in error:', error);
-      setDemoLoading(null);
     }
   };
 
@@ -69,7 +53,7 @@ export default function LoginCard() {
         {/* Google Sign In Button */}
         <button
           onClick={handleGoogleSignIn}
-          disabled={isLoading || !!demoLoading}
+          disabled={isLoading}
           className="w-full h-13 py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 font-semibold rounded-2xl border border-slate-300 shadow-sm hover:shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed group relative overflow-hidden"
         >
           {isLoading ? (
@@ -110,47 +94,12 @@ export default function LoginCard() {
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Restricted to authorized team members</span>
         </div>
-
-        {/* Demo Fast Login Switcher (Ideal for local testing) */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={() => setShowDemoSelector(!showDemoSelector)}
-            className="w-full text-xs font-semibold text-navy-600 hover:text-navy-800 transition-colors flex items-center justify-center gap-1"
-          >
-            <span>{showDemoSelector ? '▲ Hide Quick Demo Switcher' : '▼ Test as Team Member (Fast Sign-in)'}</span>
-          </button>
-
-          {showDemoSelector && (
-            <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-[11px] text-slate-500 text-center mb-2">
-                Click any member to sign in directly (no Google setup needed for testing):
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {DEFAULT_MEMBERS.map((member) => (
-                  <button
-                    key={member.id}
-                    onClick={() => handleDemoSignIn(member.email)}
-                    disabled={isLoading || !!demoLoading}
-                    className="p-2.5 bg-slate-50 hover:bg-navy-50 hover:border-navy-300 border border-slate-200 rounded-xl text-left transition-all flex items-center gap-2 text-xs font-semibold text-slate-700 disabled:opacity-50"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-navy-700 text-white flex items-center justify-center text-[10px] font-bold">
-                      {member.name[0]}
-                    </div>
-                    <div className="truncate">
-                      <div className="font-bold text-slate-900 truncate">{member.name}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{member.email}</div>
-                    </div>
-                    {demoLoading === member.email && (
-                      <Loader2 className="w-3 h-3 animate-spin ml-auto text-navy-700" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Footer */}
+      <p className="mt-6 text-center text-xs text-white/50 font-medium tracking-wide">
+        TeamSync 📅 © 2026 · Omor Faruk
+      </p>
     </div>
   );
 }
