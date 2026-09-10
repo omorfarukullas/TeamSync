@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Member, AvailabilityRecord } from '@/lib/types';
 import { computeAllSlotScores, findBestSlots } from '@/lib/constants';
 import { getSupabaseBrowserClient } from '@/lib/supabase';
+import { usePresence } from '@/hooks/usePresence';
 import MemberStatusBar from './MemberStatusBar';
 import BestSlotBanner from './BestSlotBanner';
 import TeamTable from './TeamTable';
@@ -26,6 +27,7 @@ export default function TeamView({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
+  const { onlineMemberIds } = usePresence();
 
   // Fetch latest availability from API
   const refreshData = useCallback(async (showToast = false) => {
@@ -140,11 +142,12 @@ export default function TeamView({
         </div>
       </div>
 
-      {/* A. Member Status Bar (4 Avatars + Live Fill Count) */}
+      {/* A. Member Status Bar (4 Avatars + Live Fill Count + Online Presence) */}
       <MemberStatusBar
         members={members}
         availability={availability}
         currentMemberId={currentMemberId}
+        onlineMemberIds={onlineMemberIds}
       />
 
       {/* B. Best Common Meeting Slot Highlight Banner */}

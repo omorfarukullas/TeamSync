@@ -54,3 +54,9 @@ export interface SessionUser {
   image?: string | null;
   memberId: string;
 }
+
+export interface PresenceRecord {
+  member_id: string;
+  last_seen: string;
+}
+

@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { AvailabilityRecord, AvailabilityStatus, ChatMessage, Member } from './types';
+import { AvailabilityRecord, AvailabilityStatus, ChatMessage, Member, PresenceRecord } from './types';
 import { DEFAULT_MEMBERS } from './constants';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -216,3 +216,58 @@ export async function insertChatMessage(
     return { success: false, error: err?.message || 'Failed to send message' };
   }
 }
+
+/**
+ * Upsert presence timestamp for a member
+ */
+export async function upsertPresence(
+  memberId: string
+): Promise<{ success: boolean; error?: string }> {
+  const client = getSupabaseServerClient();
+  if (!client) return { success: true };
+
+  try {
+    const { error } = await client
+      .from('presence')
+      .upsert(
+        {
+          member_id: memberId,
+          last_seen: new Date().toISOString(),
+        },
+        { onConflict: 'member_id' }
+      );
+
+    if (error) {
+      console.error('Error upserting presence:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error upserting presence:', err);
+    return { success: false, error: err?.message || 'Failed to record presence' };
+  }
+}
+
+/**
+ * Fetch all presence records
+ */
+export async function getPresenceRecords(): Promise<PresenceRecord[]> {
+  const client = getSupabaseServerClient();
+  if (!client) return [];
+
+  try {
+    const { data, error } = await client
+      .from('presence')
+      .select('member_id, last_seen');
+
+    if (error) {
+      console.error('Error fetching presence records:', error);
+      return [];
+    }
+    return (data || []) as PresenceRecord[];
+  } catch (err) {
+    console.error('Error fetching presence records:', err);
+    return [];
+  }
+}
+

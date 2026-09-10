@@ -7,12 +7,14 @@ interface MemberStatusBarProps {
   members: Member[];
   availability: AvailabilityRecord[];
   currentMemberId?: string;
+  onlineMemberIds?: Set<string>;
 }
 
 export default function MemberStatusBar({
   members,
   availability,
   currentMemberId,
+  onlineMemberIds,
 }: MemberStatusBarProps) {
   return (
     <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm">
@@ -22,7 +24,7 @@ export default function MemberStatusBar({
             Team Member Status
           </h2>
           <p className="text-xs text-slate-400 font-medium">
-            Live schedule submission tracking for all 4 members
+            Live schedule submission & online presence tracking
           </p>
         </div>
       </div>
@@ -33,6 +35,7 @@ export default function MemberStatusBar({
           const hasFilledAtLeastOne = filledCount > 0;
           const isComplete = filledCount >= 25;
           const isSelf = member.id === currentMemberId;
+          const isOnline = isSelf || (onlineMemberIds ? onlineMemberIds.has(member.id) : false);
 
           const initial = member.name.charAt(0).toUpperCase();
 
@@ -52,7 +55,7 @@ export default function MemberStatusBar({
                 </span>
               )}
 
-              {/* Avatar Circle with Status Dot */}
+              {/* Avatar Circle with Online/Offline Status Dot */}
               <div className="relative mb-3 group cursor-default">
                 {member.avatar_url ? (
                   <img
@@ -66,15 +69,15 @@ export default function MemberStatusBar({
                   </div>
                 )}
 
-                {/* 🟢 / ⚫ Indicator Dot */}
+                {/* 🟢 Online (Green) / ⚫ Offline (Grey) Indicator Dot */}
                 <span
-                  title={hasFilledAtLeastOne ? 'Active (slots filled)' : 'Not started yet'}
-                  className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ring-2 ring-white shadow-sm flex items-center justify-center ${
-                    hasFilledAtLeastOne ? 'bg-emerald-500' : 'bg-slate-400'
+                  title={isOnline ? `${member.name} is Online` : `${member.name} is Offline`}
+                  className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ring-2 ring-white shadow-sm flex items-center justify-center transition-colors duration-300 ${
+                    isOnline ? 'bg-emerald-500' : 'bg-slate-300'
                   }`}
                 >
-                  {hasFilledAtLeastOne && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                  {isOnline && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                   )}
                 </span>
               </div>
