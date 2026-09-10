@@ -9,6 +9,7 @@ interface StatusSelectorProps {
   disabled?: boolean;
   readOnly?: boolean;
   size?: 'sm' | 'md';
+  fullWidth?: boolean;
 }
 
 export default function StatusSelector({
@@ -17,6 +18,7 @@ export default function StatusSelector({
   disabled = false,
   readOnly = false,
   size = 'md',
+  fullWidth = false,
 }: StatusSelectorProps) {
   const options: AvailabilityStatus[] = ['available', 'not_available', 'maybe'];
 
@@ -24,7 +26,7 @@ export default function StatusSelector({
   if (readOnly) {
     if (!value) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200 ${fullWidth ? 'w-full justify-center py-2' : ''}`}>
           — Not Set
         </span>
       );
@@ -33,7 +35,7 @@ export default function StatusSelector({
     const config = STATUS_CONFIG[value];
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border shadow-sm ${config.bgClass} ${config.textClass} ${config.borderClass}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border shadow-sm ${config.bgClass} ${config.textClass} ${config.borderClass} ${fullWidth ? 'w-full justify-center py-2' : ''}`}
       >
         <span>{config.emoji}</span>
         <span>{config.label}</span>
@@ -43,7 +45,7 @@ export default function StatusSelector({
 
   // Interactive 3-option button selector
   return (
-    <div className="inline-flex items-center gap-1.5 p-1 bg-white/70 backdrop-blur-sm rounded-xl border border-slate-200/80 shadow-sm">
+    <div className={`items-center gap-1.5 p-1 bg-white/80 backdrop-blur-sm rounded-xl border border-slate-200/80 shadow-sm ${fullWidth ? 'flex w-full' : 'inline-flex'}`}>
       {options.map((status) => {
         const isSelected = value === status;
         const config = STATUS_CONFIG[status];
@@ -54,19 +56,26 @@ export default function StatusSelector({
             type="button"
             disabled={disabled}
             onClick={() => onChange && onChange(status)}
-            className={`flex items-center gap-1.5 rounded-lg font-bold transition-all ${
-              size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1.5 text-xs sm:text-sm'
+            className={`flex items-center justify-center gap-1.5 rounded-lg font-bold transition-all ${
+              fullWidth
+                ? 'flex-1 py-2.5 px-1.5 text-xs min-h-[44px]'
+                : size === 'sm'
+                ? 'px-2 py-1 text-xs'
+                : 'px-2.5 py-1.5 text-xs sm:text-sm'
             } ${
               isSelected
-                ? `${config.bgClass} ${config.textClass} border-2 ${config.borderClass} shadow-sm scale-[1.02]`
+                ? `${config.bgClass} ${config.textClass} border-2 ${config.borderClass} shadow-sm scale-[1.01]`
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <span>{config.emoji}</span>
-            <span className="hidden sm:inline">{config.label}</span>
+            <span className="text-sm">{config.emoji}</span>
+            <span className={fullWidth ? 'inline text-[11px] sm:text-xs leading-none' : 'hidden sm:inline'}>
+              {config.label}
+            </span>
           </button>
         );
       })}
     </div>
   );
 }
+

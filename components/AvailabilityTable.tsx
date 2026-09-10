@@ -6,7 +6,7 @@ import { DAYS, TIME_SLOTS, STATUS_CONFIG } from '@/lib/constants';
 import { AvailabilityRecord, AvailabilityStatus, Member } from '@/lib/types';
 import StatusSelector from './StatusSelector';
 import ProgressCounter from './ProgressCounter';
-import { Check, Clock, UserCheck, ShieldAlert, Eye, Edit3 } from 'lucide-react';
+import { Check, Clock, UserCheck, ShieldAlert, Eye, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AvailabilityTableProps {
   currentMemberId: string;
@@ -25,6 +25,14 @@ export default function AvailabilityTable({
   const [records, setRecords] = useState<AvailabilityRecord[]>(initialAvailability);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>(
+    DAYS.reduce((acc, day) => ({ ...acc, [day]: true }), {})
+  );
+
+  const toggleDay = (day: string) => {
+    setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
+  };
+
 
   const isSelf = selectedMemberId === currentMemberId;
   const selectedMember = allMembers.find((m) => m.id === selectedMemberId) || {
@@ -240,8 +248,144 @@ export default function AvailabilityTable({
         </div>
       )}
 
-      {/* Main Availability 25-Slot Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+      {/* Mobile Card-Based Layout (md:hidden) */}
+      <div className="md:hidden space-y-4">
+        {DAYS.map((day) => {
+          const isExpanded = expandedDays[day] ?? true;
+          const daySlotsFilled = TIME_SLOTS.filter(
+            (slot) => Boolean(getRecord(day, slot)?.status)
+          ).length;
+
+          return (
+            <div
+              key={day}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden"
+            >
+              {/* Day Accordion Header */}
+              <button
+                type="button"
+                onClick={() => toggleDay(day)}
+                className="w-full py-3.5 px-4 bg-[#1F4E79] text-white flex items-center justify-between text-left transition-colors hover:bg-navy-800"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="font-extrabold text-base tracking-tight">{day}</span>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      daySlotsFilled === 5
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-white/20 text-navy-100'
+                    }`}
+                  >
+                    {daySlotsFilled}/5 Set
+                  </span>
+                </div>
+                <div className="text-white/80">
+                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </div>
+              </button>
+
+              {/* Slot Cards List */}
+              {isExpanded && (
+                <div className="p-3 space-y-3 bg-slate-50/50">
+                  {TIME_SLOTS.map((timeSlot) => {
+                    const record = getRecord(day, timeSlot);
+                    const status = record?.status;
+                    const remarks = record?.remarks || '';
+                    const key = `${day}-${timeSlot}`;
+                    const isSaving = savingKey === key;
+
+                    // Left border color & card background
+                    let cardBorder = 'border-l-4 border-l-slate-300 bg-white';
+                    if (status === 'available') {
+                      cardBorder = 'border-l-4 border-l-[#70AD47] bg-emerald-50/40';
+                    } else if (status === 'not_available') {
+                      cardBorder = 'border-l-4 border-l-[#FF0000] bg-rose-50/40';
+                    } else if (status === 'maybe') {
+                      cardBorder = 'border-l-4 border-l-[#FFAB00] bg-amber-50/40';
+                    }
+
+                    return (
+                      <div
+                        key={key}
+                        className={`rounded-2xl p-3.5 border border-slate-200/80 shadow-xs space-y-2.5 ${cardBorder}`}
+                      >
+                        {/* Time Slot Label + Status Indicator */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs sm:text-sm">
+                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{timeSlot}</span>
+                          </div>
+
+                          {isSaving ? (
+                            <span className="text-[11px] font-bold text-navy-700 animate-pulse flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-navy-700 animate-ping" />
+                              Saving...
+                            </span>
+                          ) : status ? (
+                            <span className="text-[11px] font-bold text-slate-600">
+                              {STATUS_CONFIG[status]?.emoji} {STATUS_CONFIG[status]?.label}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] font-medium text-slate-400">
+                              Not set
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Full Width 3-Button Status Selector */}
+                        <StatusSelector
+                          value={status}
+                          onChange={(newStatus) => handleStatusChange(day, timeSlot, newStatus)}
+                          disabled={isSaving || !isSelf}
+                          readOnly={!isSelf}
+                          fullWidth
+                        />
+
+                        {/* Remarks Input or Display */}
+                        {isSelf ? (
+                          <input
+                            type="text"
+                            maxLength={100}
+                            defaultValue={remarks}
+                            placeholder="Add remark (e.g., Lab free, Exam)..."
+                            onBlur={(e) => handleRemarksBlur(day, timeSlot, e.target.value.trim())}
+                            className="w-full px-3 py-2 text-xs font-medium rounded-xl border border-slate-300/80 bg-white focus:border-navy-600 focus:ring-2 focus:ring-navy-600/20 placeholder:text-slate-400 transition-all outline-none"
+                          />
+                        ) : (
+                          remarks && (
+                            <div className="text-xs text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 font-medium">
+                              <span className="text-slate-400 font-semibold mr-1">Note:</span> {remarks}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Mobile Quick Legend */}
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-2">
+          <span className="font-bold text-slate-800 block">Status Legend:</span>
+          <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+            <span className="px-2 py-1 rounded-lg bg-[#C6EFCE] text-[#375623] font-bold text-center">
+              ✅ Available (+2)
+            </span>
+            <span className="px-2 py-1 rounded-lg bg-[#FFEB9C] text-[#7D4E00] font-bold text-center">
+              ⚠️ Maybe (+1)
+            </span>
+            <span className="px-2 py-1 rounded-lg bg-[#FFC7CE] text-[#9C0006] font-bold text-center">
+              ❌ Not Avail (0)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Desktop Availability 25-Slot Table (hidden on mobile, visible on md+) */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[70vh]">
           <table className="w-full min-w-[620px] text-left border-collapse">
             {/* Frozen Header Row */}
