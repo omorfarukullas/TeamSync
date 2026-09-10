@@ -12,6 +12,10 @@ import {
   RefreshCw,
   ArrowDown,
   Users,
+  ChevronDown,
+  X,
+  Hash,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -89,12 +93,30 @@ export default function ChatView({
   const [isSending, setIsSending] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [showTeamPopover, setShowTeamPopover] = useState(false);
+  const [showQuickDrawer, setShowQuickDrawer] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const teamPopoverRef = useRef<HTMLDivElement>(null);
 
   const { onlineMemberIds, isOnline } = usePresence();
+
+  // Close team popover on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        teamPopoverRef.current &&
+        !teamPopoverRef.current.contains(event.target as Node)
+      ) {
+        setShowTeamPopover(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Auto scroll to latest message
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
@@ -106,7 +128,6 @@ export default function ChatView({
   }, []);
 
   useEffect(() => {
-    // Only auto-scroll down if user is near bottom
     if (!showScrollBottom) {
       scrollToBottom('smooth');
     }
@@ -123,6 +144,7 @@ export default function ChatView({
   // Refresh messages from server
   const fetchMessages = useCallback(async () => {
     try {
+      setIsRefreshing(true);
       const res = await fetch('/api/chat');
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
@@ -130,6 +152,8 @@ export default function ChatView({
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   }, []);
 
@@ -137,7 +161,6 @@ export default function ChatView({
   useEffect(() => {
     const supabaseClient = getSupabaseBrowserClient();
     if (!supabaseClient) {
-      // Gentle polling fallback
       const pollInterval = setInterval(() => {
         fetchMessages();
       }, 5000);
@@ -156,7 +179,6 @@ export default function ChatView({
         },
         (payload) => {
           const newMsg = payload.new as ChatMessageType;
-          // Find sender member
           const sender = members.find((m) => m.id === newMsg.member_id);
           const fullMsg: ChatMessageType = {
             ...newMsg,
@@ -230,14 +252,12 @@ export default function ChatView({
         throw new Error(json.error || 'Failed to send message');
       }
 
-      // Replace optimistic message with actual data
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? json.data : m))
       );
     } catch (err: any) {
       console.error('Error sending message:', err);
       toast.error('Could not send message. Please try again.');
-      // Revert optimistic
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setInputText(trimmed);
     } finally {
@@ -253,110 +273,175 @@ export default function ChatView({
     }
   };
 
+  const handleSelectQuickPrompt = (promptText: string) => {
+    setInputText(promptText);
+    setShowQuickDrawer(false);
+    inputRef.current?.focus();
+  };
+
+  const onlineCount = members.filter((m) => isOnline(m.id)).length;
+
   return (
-    <div className="relative flex flex-col h-[calc(100vh-160px)] sm:h-[calc(100vh-140px)] max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-      {/* Chat Header */}
-      <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-slate-200 bg-gradient-to-r from-slate-50 via-white to-slate-50 flex items-center justify-between gap-3">
-        {/* Left: Room Info */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1F4E79] to-navy-700 text-white flex items-center justify-center shadow-md shadow-navy-700/15 flex-shrink-0">
-            <MessageSquare className="w-5 h-5" />
+    <div className="relative flex flex-col h-[calc(100vh-140px)] min-h-[520px] max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+      {/* ─── 1. TOPBAR / HEADER ──────────────────────────────────── */}
+      <header className="px-4 sm:px-6 py-3 border-b border-slate-200/90 bg-white/95 backdrop-blur-md flex items-center justify-between gap-3 z-20">
+        {/* Left: Channel Information */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+            <Hash className="w-4 h-4 text-slate-600" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 truncate">
-                Team Chatroom
+              <h2 className="text-sm sm:text-base font-black text-slate-900 truncate">
+                team-coordination
               </h2>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-navy-50 text-navy-700 border border-navy-100">
-                <Users className="w-3 h-3" />
-                {members.length} members
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                &middot; 4 members
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
-              Coordinate schedules & sync meetings
+            <p className="text-[11px] text-slate-500 font-medium truncate">
+              Synchronize schedules & group meetings in real-time
             </p>
           </div>
         </div>
 
-        {/* Right: Presence Avatars + Live Badge */}
-        <div className="flex items-center gap-2.5 sm:gap-4 flex-shrink-0">
-          {/* Member Presence Stack */}
-          <div className="flex items-center -space-x-2 sm:-space-x-1.5 hover:space-x-1 transition-all duration-200">
-            {members.map((member) => {
-              const online = isOnline(member.id);
-              const avatar = member.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`;
-              return (
-                <div
-                  key={member.id}
-                  className="relative group/avatar cursor-pointer"
-                  title={`${member.name} (${online ? 'Active now' : 'Offline'})`}
-                >
-                  <img
-                    src={avatar}
-                    alt={member.name}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-white shadow-2xs transition-transform duration-150 group-hover/avatar:scale-110 ${
-                      online ? 'ring-emerald-400' : 'opacity-80'
-                    }`}
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.includes('dicebear')) {
-                        target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${member.id}`;
-                      }
-                    }}
-                  />
-                  {/* Status Pip */}
-                  <span
-                    className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white ${
-                      online ? 'bg-emerald-500' : 'bg-slate-300'
-                    }`}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Live indicator badge */}
-          <span
-            className={`hidden xs:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${
-              isLive
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-slate-100 text-slate-600 border border-slate-200'
+        {/* Right: Team Presence Pill + Popover & Refresh */}
+        <div className="flex items-center gap-2 flex-shrink-0 relative" ref={teamPopoverRef}>
+          {/* Interactive Presence Button */}
+          <button
+            type="button"
+            onClick={() => setShowTeamPopover((prev) => !prev)}
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-95 ${
+              showTeamPopover
+                ? 'bg-slate-100 border-slate-300 text-slate-800 ring-2 ring-slate-200'
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-2xs'
             }`}
+            title="View team member online status"
           >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+            {/* Overlapping mini avatars */}
+            <div className="flex items-center -space-x-1.5">
+              {members.slice(0, 3).map((m) => (
+                <img
+                  key={m.id}
+                  src={m.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.id}`}
+                  alt={m.name}
+                  className="w-5 h-5 rounded-full object-cover ring-1.5 ring-white bg-slate-100"
+                />
+              ))}
+            </div>
+
+            <span className="flex items-center gap-1 text-[11px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{onlineCount}/4 Online</span>
+            </span>
+
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${
+                showTeamPopover ? 'rotate-180' : ''
               }`}
             />
-            <span className="hidden sm:inline">{isLive ? 'Realtime Live' : 'Connecting'}</span>
-          </span>
+          </button>
 
-          {/* Manual Refresh */}
+          {/* Presence Dropdown Popover */}
+          {showTeamPopover && (
+            <div className="absolute right-0 top-11 w-64 p-3 bg-white rounded-2xl shadow-xl border border-slate-200/90 animate-scale-in z-50">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-800">Team Presence</span>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                  {onlineCount} Active
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {members.map((m) => {
+                  const online = isOnline(m.id);
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={m.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.id}`}
+                            alt={m.name}
+                            className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200 bg-slate-100"
+                          />
+                          <span
+                            className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-white ${
+                              online ? 'bg-emerald-500' : 'bg-slate-300'
+                            }`}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{m.name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{m.id}</p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          online
+                            ? 'text-emerald-700 bg-emerald-50'
+                            : 'text-slate-400 bg-slate-100'
+                        }`}
+                      >
+                        {online ? 'Online' : 'Offline'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Refresh Action */}
           <button
             onClick={fetchMessages}
-            title="Refresh messages"
-            className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
+            title="Refresh chat history"
+            className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw
+              className={`w-4 h-4 transition-transform duration-500 ${
+                isRefreshing ? 'rotate-180 text-navy-700' : ''
+              }`}
+            />
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Messages Scroll Area */}
+      {/* ─── 2. MESSAGE STREAM AREA ──────────────────────────────── */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 bg-slate-50/50"
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-slate-50/60 overscroll-contain"
       >
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
-            <div className="w-14 h-14 rounded-2xl bg-navy-50 text-navy-600 flex items-center justify-center mb-3 shadow-inner">
-              <MessageSquare className="w-7 h-7" />
+          /* Empty State: Welcoming Card with Starter Quick Replies */
+          <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1F4E79] to-navy-700 text-white flex items-center justify-center mb-3 shadow-md shadow-navy-700/20">
+              <MessageSquare className="w-6 h-6" />
             </div>
-            <h3 className="font-bold text-slate-700 text-sm">No messages yet</h3>
-            <p className="text-xs text-slate-400 max-w-xs mt-1 leading-relaxed">
-              Start the discussion! Send a note or coordinate a meeting slot with your team.
+            <h3 className="font-extrabold text-slate-800 text-base">
+              Welcome to Team Coordination
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 mb-5 leading-relaxed">
+              Start coordinating meetings with Mehedi, Omor, Rayan, and Mahjabin. Tap a quick prompt below to begin:
             </p>
+
+            <div className="w-full space-y-2">
+              {QUICK_SUGGESTIONS.slice(0, 4).map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectQuickPrompt(suggestion)}
+                  className="w-full text-left px-3.5 py-2.5 rounded-xl bg-white hover:bg-navy-50/70 border border-slate-200/90 text-xs font-semibold text-slate-700 hover:text-navy-900 shadow-2xs hover:shadow-xs transition-all active:scale-[0.99] flex items-center justify-between group"
+                >
+                  <span className="truncate">{suggestion}</span>
+                  <span className="text-[10px] font-bold text-slate-400 group-hover:text-navy-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Use &rarr;
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((message, index) => {
@@ -368,13 +453,11 @@ export default function ChatView({
             const prevMsg = messages[index - 1];
             const nextMsg = messages[index + 1];
 
-            // Date separator calculation
             const showDateHeader =
               !prevMsg || !isSameDay(prevMsg.created_at, message.created_at)
                 ? getDateHeader(message.created_at)
                 : null;
 
-            // Grouping calculations
             const isFirstInGroup = !prevMsg || !isSameGroup(prevMsg, message);
             const isLastInGroup = !nextMsg || !isSameGroup(message, nextMsg);
 
@@ -402,38 +485,46 @@ export default function ChatView({
             scrollToBottom('smooth');
             setShowScrollBottom(false);
           }}
-          className="absolute bottom-32 sm:bottom-28 right-5 px-3 py-1.5 rounded-full bg-[#1F4E79] hover:bg-navy-800 active:scale-95 text-white text-xs font-bold shadow-lg border border-white/20 transition-all duration-200 flex items-center gap-1.5 z-20 animate-fade-in-up"
+          className="absolute bottom-28 right-6 px-3.5 py-1.5 rounded-full bg-[#1F4E79] hover:bg-navy-800 active:scale-95 text-white text-xs font-bold shadow-lg border border-white/25 transition-all duration-200 flex items-center gap-1.5 z-30 animate-fade-in-up"
         >
           <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
           <span>Latest</span>
         </button>
       )}
 
-      {/* Quick Scheduling Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-3 sm:px-5 bg-slate-100/60 border-t border-slate-200/80">
-        <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0">
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          Quick:
-        </span>
-        {QUICK_SUGGESTIONS.map((suggestion, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => {
-              setInputText(suggestion);
-              inputRef.current?.focus();
-            }}
-            className="text-xs px-2.5 py-1 rounded-full bg-white hover:bg-navy-50 hover:text-navy-700 hover:border-navy-200 border border-slate-200 text-slate-600 transition-all duration-150 whitespace-nowrap shadow-2xs active:scale-95 flex-shrink-0"
-          >
-            {suggestion}
-          </button>
-        ))}
-      </div>
+      {/* ─── 3. MODERN UNIFIED COMPOSER ──────────────────────────── */}
+      <div className="p-3 sm:p-4 bg-white border-t border-slate-200/90 z-10">
+        <div className="bg-slate-50/80 rounded-2xl border border-slate-200 focus-within:border-navy-600 focus-within:ring-2 focus-within:ring-navy-600/15 focus-within:bg-white transition-all overflow-hidden shadow-2xs">
+          {/* Optional Expandable Quick Suggestions Drawer */}
+          {showQuickDrawer && (
+            <div className="px-3 pt-2.5 pb-1 border-b border-slate-200/70 bg-slate-100/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar animate-fade-in-up">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 flex-shrink-0 mr-1">
+                <Sparkles className="w-3 h-3 text-amber-500" />
+                Suggestions:
+              </span>
+              {QUICK_SUGGESTIONS.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectQuickPrompt(suggestion)}
+                  className="text-xs px-2.5 py-1 rounded-full bg-white hover:bg-navy-50 hover:text-navy-700 hover:border-navy-200 border border-slate-200 text-slate-600 transition-all whitespace-nowrap shadow-2xs active:scale-95 flex-shrink-0"
+                >
+                  {suggestion}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setShowQuickDrawer(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/70 ml-auto flex-shrink-0"
+                title="Close suggestions"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
-      {/* Message Input Bar */}
-      <div className="p-3 sm:p-4 bg-white border-t border-slate-200/90">
-        <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-          <div className="flex-1 relative bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-navy-600 focus-within:ring-2 focus-within:ring-navy-600/20 focus-within:bg-white transition-all">
+          {/* Text Input Area */}
+          <form onSubmit={handleSendMessage} className="p-2 sm:p-2.5">
             <textarea
               ref={inputRef}
               rows={1}
@@ -441,36 +532,56 @@ export default function ChatView({
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={500}
-              placeholder="Type a message to the team (Press Enter to send)..."
-              className="w-full py-2.5 px-3.5 bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 max-h-28 overflow-y-auto"
+              placeholder="Message #team-coordination..."
+              className="w-full py-1.5 px-2 bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 min-h-[38px] max-h-28 overflow-y-auto"
             />
-          </div>
 
-          <button
-            type="submit"
-            disabled={!inputText.trim() || isSending}
-            className="p-2.5 sm:px-4 sm:py-2.5 bg-[#1F4E79] hover:bg-[#163a5c] active:scale-95 text-white font-bold rounded-2xl shadow-sm hover:shadow-md transition-all duration-150 ease-out disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 flex-shrink-0 h-[42px]"
-          >
-            <Send className="w-4 h-4" />
-            <span className="hidden sm:inline text-xs">Send</span>
-          </button>
-        </form>
+            {/* Composer Toolbar (Bottom Row) */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 mt-1">
+              {/* Left: Quick Replies launcher & keyboard hint */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickDrawer((prev) => !prev)}
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    showQuickDrawer
+                      ? 'bg-amber-100/70 text-amber-800 border border-amber-300/80'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                  }`}
+                  title="Toggle Quick Scheduling Replies"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[11px] font-bold">Quick Replies</span>
+                </button>
 
-        {/* Input Bar Hint & Character Count */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 mt-1.5">
-          <span className="hidden sm:inline">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 font-mono text-[10px]">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 font-mono text-[10px]">Shift + Enter</kbd> for newline
-          </span>
-          <span className="sm:hidden text-slate-400">Tap Send to share</span>
-          {inputText.length > 0 && (
-            <span
-              className={`text-[10px] font-mono ml-auto ${
-                inputText.length > 450 ? 'text-rose-500 font-bold' : 'text-slate-400'
-              }`}
-            >
-              {inputText.length} / 500
-            </span>
-          )}
+                <span className="hidden sm:inline text-[11px] text-slate-400">
+                  &middot; <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 font-mono text-[9px]">Enter</kbd> to send
+                </span>
+              </div>
+
+              {/* Right: Character count & Send button */}
+              <div className="flex items-center gap-2">
+                {inputText.length > 0 && (
+                  <span
+                    className={`text-[10px] font-mono ${
+                      inputText.length > 450 ? 'text-rose-500 font-bold' : 'text-slate-400'
+                    }`}
+                  >
+                    {inputText.length}/500
+                  </span>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={!inputText.trim() || isSending}
+                  className="px-3.5 py-1.5 bg-[#1F4E79] hover:bg-[#163a5c] active:scale-95 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-xs h-[34px]"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send</span>
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>
