@@ -103,6 +103,7 @@ export function computeAllSlotScores(
       let maybeCount = 0;
       let notAvailableCount = 0;
       let notFilledCount = 0;
+      let submittedCount = 0;
       const memberMap: Record<string, { status?: AvailabilityStatus; remarks?: string | null }> = {};
 
       for (const member of members) {
@@ -115,6 +116,7 @@ export function computeAllSlotScores(
             status: record.status,
             remarks: record.remarks,
           };
+          submittedCount++;
 
           if (record.status === 'available') {
             score += 2;
@@ -135,7 +137,8 @@ export function computeAllSlotScores(
         day,
         time_slot,
         score,
-        maxScore: members.length * 2, // 4 members * 2 = 8
+        maxScore: members.length * 2, // e.g. 4 members * 2 = 8
+        effectiveMaxScore: submittedCount * 2, // submitted members * 2
         breakdown: {
           available: availableCount,
           maybe: maybeCount,
@@ -151,16 +154,28 @@ export function computeAllSlotScores(
 }
 
 /**
- * Find highest scoring slots
+ * Find highest scoring slots with smart tiebreaking and limit
  */
-export function findBestSlots(slotScores: SlotScore[]): SlotScore[] {
+export function findBestSlots(slotScores: SlotScore[], limit: number = 3): SlotScore[] {
   if (!slotScores || slotScores.length === 0) return [];
   
   // Only consider slots with at least 1 point
   const maxScore = Math.max(...slotScores.map((s) => s.score));
   if (maxScore <= 0) return [];
 
-  return slotScores.filter((s) => s.score === maxScore);
+  const tied = slotScores.filter((s) => s.score === maxScore);
+
+  // Tiebreakers:
+  // 1. More 'available' (green) count
+  // 2. Fewer 'not_filled' (pending) count
+  tied.sort((a, b) => {
+    if (b.breakdown.available !== a.breakdown.available) {
+      return b.breakdown.available - a.breakdown.available;
+    }
+    return a.breakdown.not_filled - b.breakdown.not_filled;
+  });
+
+  return limit > 0 ? tied.slice(0, limit) : tied;
 }
 
 /**

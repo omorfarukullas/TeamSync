@@ -29,8 +29,9 @@ export default function BestSlotBanner({
     );
   }
 
-  const maxPossibleScore = totalMembersCount * 2; // 8
+  const maxPossibleScore = totalMembersCount * 2; // e.g. 8 for 4 members
   const isMultipleTied = bestSlots.length > 1;
+  const hasPendingMembers = bestSlots.some((s) => s.breakdown.not_filled > 0);
 
   return (
     <div className="bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-white rounded-3xl p-6 sm:p-8 border-2 border-amber-400/80 shadow-lg shadow-amber-500/10 relative overflow-hidden">
@@ -43,7 +44,7 @@ export default function BestSlotBanner({
           <Trophy className="w-5 h-5 text-amber-600 animate-bounce" />
           <span>
             {isMultipleTied
-              ? `🏆 ${bestSlots.length} TIED BEST MEETING SLOTS FOUND`
+              ? `🏆 TOP ${bestSlots.length} RECOMMENDED MEETING SLOTS`
               : '🏆 BEST COMMON MEETING SLOT'}
           </span>
         </div>
@@ -54,10 +55,23 @@ export default function BestSlotBanner({
         </div>
       </div>
 
+      {/* Notice if any members haven't submitted yet */}
+      {hasPendingMembers && (
+        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-medium flex items-center gap-2 relative z-10 shadow-2xs">
+          <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+          <span>
+            Some team members have not submitted their availability yet. Scores are calculated from submitted responses and will update as more members respond.
+          </span>
+        </div>
+      )}
+
       {/* Slots list (single or stacked if multiple tied) */}
       <div className="space-y-4 relative z-10">
-        {bestSlots.map((slot, index) => {
-          const scorePercent = Math.round((slot.score / maxPossibleScore) * 100);
+        {bestSlots.map((slot) => {
+          const denominator = slot.effectiveMaxScore > 0 ? slot.effectiveMaxScore : maxPossibleScore;
+          const scorePercent = Math.round((slot.score / denominator) * 100);
+          const submittedMembers = slot.effectiveMaxScore > 0 ? slot.effectiveMaxScore / 2 : 0;
+          const isPartialSubmission = slot.breakdown.not_filled > 0;
 
           return (
             <div
@@ -88,7 +102,7 @@ export default function BestSlotBanner({
                     ❌ {slot.breakdown.not_available} Not Available
                   </span>
                   {slot.breakdown.not_filled > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 text-slate-500">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-300">
                       ⏳ {slot.breakdown.not_filled} Pending
                     </span>
                   )}
@@ -96,7 +110,7 @@ export default function BestSlotBanner({
               </div>
 
               {/* Overall Score Badge */}
-              <div className="flex items-center md:flex-col items-end justify-between md:justify-center p-3 bg-amber-50/80 rounded-xl border border-amber-200/70 min-w-[140px]">
+              <div className="flex items-center md:flex-col items-end justify-between md:justify-center p-3 bg-amber-50/80 rounded-xl border border-amber-200/70 min-w-[150px]">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
                   Overall Score
                 </span>
@@ -105,11 +119,16 @@ export default function BestSlotBanner({
                     {slot.score}
                   </span>
                   <span className="text-xs font-bold text-amber-700">
-                    / {maxPossibleScore}
+                    / {denominator}
                   </span>
+                  {isPartialSubmission && (
+                    <span className="text-[10px] text-amber-700 font-medium ml-0.5">
+                      ({submittedMembers}/{totalMembersCount})
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] font-semibold text-emerald-700 mt-0.5">
-                  {scorePercent}% Agreement
+                  {scorePercent}% Agreement {isPartialSubmission ? '(submitted)' : ''}
                 </div>
               </div>
             </div>

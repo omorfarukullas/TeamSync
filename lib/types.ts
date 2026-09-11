@@ -30,6 +30,7 @@ export interface SlotScore {
   time_slot: string;
   score: number;
   maxScore: number;
+  effectiveMaxScore: number;
   breakdown: SlotBreakdown;
   members: Record<string, { status?: AvailabilityStatus; remarks?: string | null }>;
 }

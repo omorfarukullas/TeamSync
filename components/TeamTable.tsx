@@ -81,6 +81,8 @@ export default function TeamTable({
                     const score = slot?.score ?? 0;
                     const isBest = score > 0 && score === bestScore;
 
+                    const slotMaxScore = slot?.maxScore ?? (members.length * 2);
+
                     return (
                       <div
                         key={`${day}-${timeSlot}`}
@@ -107,14 +109,14 @@ export default function TeamTable({
                               className={`text-xs font-black font-mono px-2.5 py-0.5 rounded-lg ${
                                 isBest
                                   ? 'bg-amber-500 text-white shadow-xs'
-                                  : score >= 6
+                                  : score >= slotMaxScore * 0.75
                                   ? 'bg-emerald-100 text-emerald-800'
-                                  : score >= 4
+                                  : score >= slotMaxScore * 0.5
                                   ? 'bg-slate-100 text-slate-700'
                                   : 'bg-slate-100 text-slate-400'
                               }`}
                             >
-                              Score: {score}/8
+                              Score: {score}/{slotMaxScore}
                             </span>
                           </div>
                         </div>
@@ -279,7 +281,7 @@ export default function TeamTable({
                   );
                 })}
                 <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider text-center w-28">
-                  Score (0-8)
+                  Score (0-{members.length * 2})
                 </th>
               </tr>
             </thead>
@@ -290,6 +292,7 @@ export default function TeamTable({
                   const slot = getSlot(day, timeSlot);
                   const score = slot?.score ?? 0;
                   const isBest = score > 0 && score === bestScore;
+                  const slotMaxScore = slot?.maxScore ?? (members.length * 2);
 
                   return (
                     <tr
@@ -372,9 +375,9 @@ export default function TeamTable({
                             className={`text-sm font-black font-mono px-2 py-0.5 rounded-lg ${
                               isBest
                                 ? 'bg-amber-500 text-white shadow-sm'
-                                : score >= 6
+                                : score >= slotMaxScore * 0.75
                                 ? 'bg-emerald-100 text-emerald-800'
-                                : score >= 4
+                                : score >= slotMaxScore * 0.5
                                 ? 'bg-slate-100 text-slate-700'
                                 : 'bg-slate-100 text-slate-400'
                             }`}
