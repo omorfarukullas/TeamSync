@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { DAYS, TIME_SLOTS, STATUS_CONFIG } from '@/lib/constants';
+import { DAYS, TIME_SLOTS } from '@/lib/constants';
 import { Member, SlotScore, AvailabilityStatus } from '@/lib/types';
-import { Clock, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface TeamTableProps {
   members: Member[];
@@ -30,19 +30,17 @@ export default function TeamTable({
     setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
   };
 
-  // Helper to find score record for a day/slot
   const getSlot = (day: string, timeSlot: string): SlotScore | undefined => {
     return slotScores.find((s) => s.day === day && s.time_slot === timeSlot);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Mobile Card-Based Team View (md:hidden) */}
       <div className="md:hidden space-y-4">
         {DAYS.map((day) => {
           const isExpanded = expandedDays[day] ?? true;
 
-          // Count if any slot in this day is a best slot
           const bestSlotsInDay = TIME_SLOTS.filter((slot) => {
             const s = getSlot(day, slot);
             return s && s.score > 0 && s.score === bestScore;
@@ -51,72 +49,60 @@ export default function TeamTable({
           return (
             <div
               key={day}
-              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden"
+              className="bg-white border-2 border-black overflow-hidden"
             >
               {/* Day Accordion Header */}
               <button
                 type="button"
                 onClick={() => toggleDay(day)}
-                className="w-full py-3.5 px-4 bg-[#1F4E79] text-white flex items-center justify-between text-left transition-colors hover:bg-navy-800"
+                className="w-full py-3.5 px-4 bg-black text-white flex items-center justify-between text-left border-b border-black"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="font-extrabold text-base tracking-tight">{day}</span>
+                  <span className="font-serif text-base font-bold uppercase tracking-wider">{day}</span>
                   {bestSlotsInDay > 0 && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 flex items-center gap-1">
-                      <Trophy className="w-3 h-3 text-slate-900" />
-                      {bestSlotsInDay} Best
+                    <span className="font-mono text-[9px] font-bold uppercase px-2 py-0.5 bg-white text-black border border-white">
+                      {bestSlotsInDay} OPTIMAL
                     </span>
                   )}
                 </div>
-                <div className="text-white/80">
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                <div className="text-white">
+                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </div>
               </button>
 
               {/* Slot Cards List */}
               {isExpanded && (
-                <div className="p-3 space-y-3 bg-slate-50/50">
+                <div className="p-3 space-y-3 bg-[#FAFAFA]">
                   {TIME_SLOTS.map((timeSlot) => {
                     const slot = getSlot(day, timeSlot);
                     const score = slot?.score ?? 0;
                     const isBest = score > 0 && score === bestScore;
-
                     const slotMaxScore = slot?.maxScore ?? (members.length * 2);
 
                     return (
                       <div
                         key={`${day}-${timeSlot}`}
-                        className={`rounded-2xl p-3.5 border shadow-xs space-y-3 ${
+                        className={`p-3.5 border bg-white space-y-3 ${
                           isBest
-                            ? 'bg-amber-50/70 border-amber-300 border-l-4 border-l-amber-500'
-                            : 'bg-white border-slate-200/90 border-l-4 border-l-slate-300'
+                            ? 'border-2 border-black border-l-8 border-l-black font-semibold'
+                            : 'border border-black'
                         }`}
                       >
                         {/* Header: Slot Time + Score Badge */}
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs sm:text-sm">
-                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-center justify-between gap-2 border-b border-black/20 pb-2">
+                          <div className="flex items-center gap-1.5 font-mono font-bold text-black text-xs">
+                            <Clock className="w-3.5 h-3.5 text-[#525252] shrink-0" />
                             <span>{timeSlot}</span>
                           </div>
 
                           <div className="flex items-center gap-1.5">
                             {isBest && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-slate-900">
-                                🏆 Best Slot
+                              <span className="font-mono text-[9px] font-bold uppercase px-2 py-0.5 bg-black text-white border border-black">
+                                BEST SLOT
                               </span>
                             )}
-                            <span
-                              className={`text-xs font-black font-mono px-2.5 py-0.5 rounded-lg ${
-                                isBest
-                                  ? 'bg-amber-500 text-white shadow-xs'
-                                  : score >= slotMaxScore * 0.75
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : score >= slotMaxScore * 0.5
-                                  ? 'bg-slate-100 text-slate-700'
-                                  : 'bg-slate-100 text-slate-400'
-                              }`}
-                            >
-                              Score: {score}/{slotMaxScore}
+                            <span className="font-mono text-xs font-bold text-black border border-black px-2 py-0.5 bg-[#F5F5F5]">
+                              SCORE: {score}/{slotMaxScore}
                             </span>
                           </div>
                         </div>
@@ -128,51 +114,51 @@ export default function TeamTable({
                             const status: AvailabilityStatus | undefined = memberData?.status;
                             const remarks = memberData?.remarks;
 
-                            let pillBg = 'bg-slate-100 text-slate-400 border-slate-200';
-                            let statusText = 'Not set';
+                            let cellBg = 'bg-[#F5F5F5] text-[#737373] border-[#E5E5E5]';
+                            let statusText = 'NOT SET';
                             let statusEmoji = '—';
 
                             if (status === 'available') {
-                              pillBg = 'bg-[#C6EFCE] text-[#375623] border-[#70AD47]/40';
-                              statusText = 'Available';
-                              statusEmoji = '✅';
+                              cellBg = 'bg-[#C6EFCE] text-[#375623] border-[#70AD47]';
+                              statusText = 'AVAILABLE';
+                              statusEmoji = '✓';
                             } else if (status === 'not_available') {
-                              pillBg = 'bg-[#FFC7CE] text-[#9C0006] border-[#FF0000]/40';
-                              statusText = 'Unavailable';
-                              statusEmoji = '❌';
+                              cellBg = 'bg-[#FFC7CE] text-[#9C0006] border-[#FF0000]';
+                              statusText = 'UNAVAILABLE';
+                              statusEmoji = '✗';
                             } else if (status === 'maybe') {
-                              pillBg = 'bg-[#FFEB9C] text-[#7D4E00] border-[#FFAB00]/40';
-                              statusText = 'Maybe';
-                              statusEmoji = '⚠️';
+                              cellBg = 'bg-[#FFEB9C] text-[#7D4E00] border-[#FFAB00]';
+                              statusText = 'MAYBE';
+                              statusEmoji = '?';
                             }
 
                             return (
                               <div
                                 key={member.id}
-                                className="bg-white/90 p-2 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-1"
+                                className="p-2 border border-black bg-white flex flex-col justify-between gap-1"
                               >
                                 <div className="flex items-center justify-between gap-1">
                                   <div className="flex items-center gap-1.5 min-w-0">
-                                    <div className="w-5 h-5 rounded-full bg-[#1F4E79] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    <div className="w-4 h-4 bg-black text-white flex items-center justify-center font-mono font-bold text-[9px] shrink-0 border border-black">
                                       {member.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="text-xs font-bold text-slate-800 truncate">
+                                    <span className="font-mono text-xs font-bold text-black truncate">
                                       {member.name}
                                     </span>
                                   </div>
-                                  <span className="text-xs select-none shrink-0">{statusEmoji}</span>
+                                  <span className="font-mono text-xs font-bold select-none shrink-0">{statusEmoji}</span>
                                 </div>
 
-                                <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md text-center border ${pillBg}`}>
+                                <div className={`font-mono text-[9px] font-bold px-1.5 py-0.5 text-center border ${cellBg}`}>
                                   {statusText}
                                 </div>
 
                                 {remarks && (
                                   <div
-                                    className="text-[10px] text-slate-500 truncate italic bg-slate-50 px-1 py-0.5 rounded"
+                                    className="font-mono text-[10px] text-[#525252] truncate border-t border-black/10 pt-0.5"
                                     title={remarks}
                                   >
-                                    💬 {remarks}
+                                    Note: {remarks}
                                   </div>
                                 )}
                               </div>
@@ -189,39 +175,41 @@ export default function TeamTable({
         })}
 
         {/* Quick Legend for Mobile */}
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-2">
-          <span className="font-bold text-slate-800 block">Status Legend & Scoring:</span>
-          <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-            <span className="px-2 py-1 rounded-lg bg-[#C6EFCE] text-[#375623] font-bold text-center">
-              ✅ Avail (+2)
+        <div className="p-3.5 bg-white border border-black font-mono text-xs text-black space-y-2">
+          <span className="font-bold uppercase tracking-wider block">Status Legend & Scoring:</span>
+          <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+            <span className="px-2 py-1 bg-[#C6EFCE] text-[#375623] border border-[#70AD47] font-bold text-center">
+              ✓ Avail (+2)
             </span>
-            <span className="px-2 py-1 rounded-lg bg-[#FFEB9C] text-[#7D4E00] font-bold text-center">
-              ⚠️ Maybe (+1)
+            <span className="px-2 py-1 bg-[#FFEB9C] text-[#7D4E00] border border-[#FFAB00] font-bold text-center">
+              ? Maybe (+1)
             </span>
-            <span className="px-2 py-1 rounded-lg bg-[#FFC7CE] text-[#9C0006] font-bold text-center">
-              ❌ Unavail (0)
+            <span className="px-2 py-1 bg-[#FFC7CE] text-[#9C0006] border border-[#FF0000] font-bold text-center">
+              ✗ Unavail (0)
             </span>
           </div>
         </div>
       </div>
 
       {/* Main Desktop Comparison Table (hidden on mobile, visible on md+) */}
-      <div className="hidden md:block bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div className="hidden md:block bg-white border-2 border-black overflow-hidden">
         {/* Table Header Controls */}
-        <div className="p-5 sm:p-6 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+        <div className="p-5 border-b-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-[#525252] block mb-1">
+              COLLECTIVE MATRIX
+            </span>
+            <h2 className="font-serif text-2xl font-bold tracking-tight text-black uppercase">
               Full Team Availability Comparison
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-              Compare all 4 schedules simultaneously to identify common free windows
+            <p className="font-body text-xs text-[#525252] mt-0.5">
+              Simultaneous 4-member alignment matrix for identifying collective consensus windows.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-300">
-              <Trophy className="w-3.5 h-3.5 text-amber-600" />
-              <span>Highlighted = Best Meeting Slots</span>
+          <div className="flex items-center gap-2 font-mono text-xs text-black">
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-black text-white border border-black font-bold uppercase tracking-wider">
+              <span>■ Left Border = Recommended Slot</span>
             </span>
           </div>
         </div>
@@ -230,12 +218,12 @@ export default function TeamTable({
         <div className="overflow-x-auto max-h-[75vh]">
           <table className="w-full min-w-[760px] text-left border-collapse">
             {/* Frozen Table Head */}
-            <thead className="sticky top-0 z-30 bg-[#1F4E79] text-white shadow-sm">
+            <thead className="sticky top-0 z-30 bg-black text-white">
               <tr>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-36 border-r border-navy-800">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider w-36 border-r border-white/20">
                   Day
                 </th>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-44 border-r border-navy-800">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider w-44 border-r border-white/20">
                   Time Slot
                 </th>
                 {members.map((member) => {
@@ -246,15 +234,15 @@ export default function TeamTable({
                   return (
                     <th
                       key={member.id}
-                      className="py-3 px-3 text-xs font-bold uppercase tracking-wider text-center border-r border-navy-800 min-w-[100px]"
+                      className="py-3 px-3 font-mono text-xs font-bold uppercase tracking-wider text-center border-r border-white/20 min-w-[110px]"
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        {/* Member Avatar Thumbnail with Online Dot */}
+                      <div className="flex flex-col items-center gap-1.5">
+                        {/* Member Avatar Thumbnail with Sharp Square Dot */}
                         <div className="relative">
                           <img
                             src={avatarUrl}
                             alt={member.name}
-                            className="w-7 h-7 rounded-full object-cover ring-2 ring-white/70 shadow-xs bg-slate-100"
+                            className="w-7 h-7 object-cover border border-white bg-[#171717]"
                             onError={(e) => {
                               const target = e.currentTarget;
                               if (!target.src.includes('dicebear')) {
@@ -264,55 +252,54 @@ export default function TeamTable({
                           />
                           <span
                             title={isOnline ? `${member.name} is Online` : `${member.name} is Offline`}
-                            className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-1 ring-white shadow-xs ${
-                              isOnline ? 'bg-emerald-400' : 'bg-slate-400'
+                            className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 border border-white ${
+                              isOnline ? 'bg-white' : 'bg-[#737373]'
                             }`}
                           />
                         </div>
 
-                        <span className="truncate max-w-[85px] leading-tight font-extrabold text-white">
+                        <span className="truncate max-w-[90px] leading-tight font-bold text-white">
                           {member.name}
                         </span>
-                        <span className="text-[10px] font-medium text-navy-200 lowercase">
-                          {isSelf ? '(you)' : member.id}
+                        <span className="text-[9px] font-normal text-[#A3A3A3] uppercase tracking-wider">
+                          {isSelf ? '(YOU)' : member.id}
                         </span>
                       </div>
                     </th>
                   );
                 })}
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider text-center w-28">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider text-center w-32">
                   Score (0-{members.length * 2})
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-black/20 text-sm">
               {DAYS.map((day) => {
                 return TIME_SLOTS.map((timeSlot, slotIndex) => {
                   const slot = getSlot(day, timeSlot);
                   const score = slot?.score ?? 0;
                   const isBest = score > 0 && score === bestScore;
-                  const slotMaxScore = slot?.maxScore ?? (members.length * 2);
 
                   return (
                     <tr
                       key={`${day}-${timeSlot}`}
-                      className={`transition-all ${
+                      className={`transition-colors duration-100 ${
                         isBest
-                          ? 'bg-[#FEFCE8] hover:bg-[#FEF9C3] ring-1 ring-inset ring-amber-400 font-semibold'
-                          : 'hover:bg-slate-50/80'
+                          ? 'bg-white font-bold'
+                          : 'hover:bg-[#F5F5F5]'
                       }`}
                     >
-                      {/* Day Column (dynamic rowspan, navy background) */}
+                      {/* Day Column (merged rowspan, black background) */}
                       {slotIndex === 0 && (
                         <td
                           rowSpan={TIME_SLOTS.length}
-                          className="py-4 px-4 bg-[#1F4E79] text-white font-extrabold text-base align-middle text-center border-r border-navy-800 border-b-2 border-b-white/20 select-none"
+                          className="py-4 px-4 bg-black text-white font-serif font-bold text-base align-middle text-center border-r-2 border-black border-b-2 border-b-white/20 select-none uppercase tracking-wider"
                         >
                           <div className="flex flex-col items-center justify-center gap-1">
                             <span>{day}</span>
-                            <span className="text-[10px] font-medium text-navy-200 uppercase tracking-widest bg-navy-900/60 px-2 py-0.5 rounded-full">
-                              {TIME_SLOTS.length} Slots
+                            <span className="font-mono text-[9px] uppercase tracking-widest bg-white text-black px-2 py-0.5 border border-white font-bold">
+                              {TIME_SLOTS.length} SLOTS
                             </span>
                           </div>
                         </td>
@@ -320,46 +307,46 @@ export default function TeamTable({
 
                       {/* Time Slot */}
                       <td
-                        className={`py-3.5 px-4 font-semibold text-slate-800 border-r border-slate-200 whitespace-nowrap ${
-                          isBest ? 'border-l-4 border-l-amber-500 pl-3' : ''
+                        className={`py-3 px-4 font-mono text-xs font-semibold text-black border-r border-black/20 whitespace-nowrap ${
+                          isBest ? 'border-l-4 border-l-black pl-3 bg-[#FAFAFA]' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <Clock className="w-3.5 h-3.5 text-[#525252]" />
                           <span>{timeSlot}</span>
                         </div>
                       </td>
 
-                      {/* 4 Members' columns */}
+                      {/* 4 Members' columns with data-ink */}
                       {members.map((member) => {
                         const memberData = slot?.members?.[member.id];
                         const status: AvailabilityStatus | undefined = memberData?.status;
                         const remarks = memberData?.remarks;
 
-                        let cellBg = 'bg-[#F5F5F5] text-slate-400';
+                        let cellBg = 'bg-[#F5F5F5] text-[#737373]';
                         let emojiDisplay = '—';
 
                         if (status === 'available') {
                           cellBg = 'bg-[#C6EFCE] text-[#375623]';
-                          emojiDisplay = '✅';
+                          emojiDisplay = '✓';
                         } else if (status === 'not_available') {
                           cellBg = 'bg-[#FFC7CE] text-[#9C0006]';
-                          emojiDisplay = '❌';
+                          emojiDisplay = '✗';
                         } else if (status === 'maybe') {
                           cellBg = 'bg-[#FFEB9C] text-[#7D4E00]';
-                          emojiDisplay = '⚠️';
+                          emojiDisplay = '?';
                         }
 
                         return (
                           <td
                             key={member.id}
-                            className={`py-2 px-2 text-center border-r border-slate-200 font-bold transition-colors ${cellBg}`}
+                            className={`py-2 px-2 text-center border-r border-black/20 font-mono font-bold transition-colors ${cellBg}`}
                             title={remarks ? `${member.name}: ${remarks}` : `${member.name}: ${status || 'Not set'}`}
                           >
                             <div className="flex flex-col items-center justify-center gap-0.5">
-                              <span className="text-base select-none">{emojiDisplay}</span>
+                              <span className="text-sm select-none">{emojiDisplay}</span>
                               {remarks && (
-                                <span className="text-[10px] truncate max-w-[80px] font-medium opacity-80" title={remarks}>
+                                <span className="font-mono text-[9px] truncate max-w-[85px] font-normal opacity-75" title={remarks}>
                                   💬 {remarks}
                                 </span>
                               )}
@@ -370,24 +357,20 @@ export default function TeamTable({
 
                       {/* Score Column */}
                       <td className="py-3 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5 font-mono">
                           <span
-                            className={`text-sm font-black font-mono px-2 py-0.5 rounded-lg ${
+                            className={`text-sm font-bold px-2 py-0.5 border ${
                               isBest
-                                ? 'bg-amber-500 text-white shadow-sm'
-                                : score >= slotMaxScore * 0.75
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : score >= slotMaxScore * 0.5
-                                ? 'bg-slate-100 text-slate-700'
-                                : 'bg-slate-100 text-slate-400'
+                                ? 'bg-black text-white border-black'
+                                : 'bg-[#F5F5F5] text-black border-black/30'
                             }`}
                           >
                             {score}
                           </span>
 
                           {isBest && (
-                            <span className="inline-flex items-center text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-amber-200 text-amber-900 border border-amber-300">
-                              🏆 Best
+                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-black text-white border border-black">
+                              BEST
                             </span>
                           )}
                         </div>
@@ -401,16 +384,17 @@ export default function TeamTable({
         </div>
 
         {/* Footer Info */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2 font-medium">
+        <div className="p-4 bg-white border-t-2 border-black font-mono text-xs text-[#525252] flex flex-wrap items-center justify-between gap-2">
           <div>
-            Hover over any status cell with 💬 to view member notes/remarks.
+            Hover over any cell with 💬 to view submitted remarks.
           </div>
-          <div className="text-slate-400 font-semibold text-[11px]">
-            Max score: 8 (4 members × 2 pts)
+          <div className="text-black font-bold text-[11px] uppercase tracking-wider">
+            Score denominator: 8 (4 members &times; 2 pts)
           </div>
         </div>
       </div>
     </div>
   );
 }
+
 

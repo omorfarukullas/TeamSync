@@ -22,13 +22,13 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Top Navbar */}
       <Navbar user={session.user} />
       <PresenceTracker />
 
       {/* Main Content Area (extra bottom padding on mobile for MobileTabBar) */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 mb-16 md:mb-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 mb-16 md:mb-8">
         {children}
       </main>
 
@@ -37,3 +37,4 @@ export default async function DashboardLayout({
     </div>
   );
 }
+

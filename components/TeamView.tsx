@@ -8,7 +8,7 @@ import { usePresence } from '@/hooks/usePresence';
 import MemberStatusBar from './MemberStatusBar';
 import BestSlotBanner from './BestSlotBanner';
 import TeamTable from './TeamTable';
-import { Radio, RefreshCw, Sparkles, Wifi } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TeamViewProps {
@@ -27,7 +27,7 @@ export default function TeamView({
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [availability, setAvailability] = useState<AvailabilityRecord[]>(initialAvailability);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [, setLastUpdated] = useState<Date>(new Date());
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
   const { onlineMemberIds } = usePresence();
 
@@ -70,7 +70,6 @@ export default function TeamView({
   useEffect(() => {
     const supabaseClient = getSupabaseBrowserClient();
     if (!supabaseClient) {
-      // If Supabase credentials are not configured yet, poll gently every 10s
       const pollInterval = setInterval(() => {
         refreshData(false);
       }, 10000);
@@ -106,56 +105,41 @@ export default function TeamView({
     };
   }, [refreshData]);
 
-  // Compute live scores for all 25 slots
   const slotScores = computeAllSlotScores(availability, members);
   const bestSlots = findBestSlots(slotScores);
   const bestScore = bestSlots.length > 0 ? bestSlots[0].score : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Top Header with Live Indicator & Refresh */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-2 border-black pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <span className="font-mono text-[10px] tracking-widest uppercase text-[#525252] block mb-1">
+            CONSENSUS MATRIX &middot; 4 COHORT MEMBERS
+          </span>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-black uppercase">
             Team Availability Matrix
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Real-time aggregate schedule to determine optimal meeting time
+          <p className="font-body text-xs sm:text-sm text-[#525252] mt-1">
+            Real-time aggregate schedule to identify optimal common meeting windows without calendar conflict.
           </p>
         </div>
 
         {/* Live Indicator Badge & Manual Refresh Button */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-xs border transition-all ${
-              isLiveConnected
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-red-50 text-red-700 border-red-200'
-            }`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span
-                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  isLiveConnected ? 'bg-emerald-400' : 'bg-red-400'
-                }`}
-              />
-              <span
-                className={`relative inline-flex rounded-full h-2 w-2 ${
-                  isLiveConnected ? 'bg-emerald-500' : 'bg-red-500'
-                }`}
-              />
-            </span>
-            <span>{isLiveConnected ? 'Live Realtime' : 'Live Sync'}</span>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto font-mono">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white border border-black text-xs font-bold uppercase tracking-wider">
+            <span className={`w-2 h-2 ${isLiveConnected ? 'bg-white' : 'bg-[#737373]'}`} />
+            <span>{isLiveConnected ? 'LIVE REALTIME' : 'POLLING SYNC'}</span>
           </div>
 
           <button
             onClick={() => refreshData(true)}
             disabled={isRefreshing}
-            className="p-2 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl border border-slate-200 shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5 text-xs font-bold"
+            className="px-3 py-1.5 bg-white hover:bg-black hover:text-white text-black border border-black transition-invert disabled:opacity-50 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
             title="Refresh now"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-navy-700' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>REFRESH</span>
           </button>
         </div>
       </div>
@@ -187,3 +171,4 @@ export default function TeamView({
     </div>
   );
 }
+

@@ -5,33 +5,44 @@ import { DEFAULT_MEMBERS } from '@/lib/constants';
 
 export default function DeniedPage() {
   return (
-    <main className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-[#1F4E79] via-[#163a5c] to-[#0F2D47] relative">
-      <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 sm:p-10 border border-red-100 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-100 text-red-600 mb-6 ring-8 ring-red-50">
-          <ShieldAlert className="w-8 h-8" />
+    <main className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-white relative">
+      <div className="w-full max-w-lg bg-black text-white p-8 sm:p-12 border-4 border-black text-left">
+        {/* Editorial Top Marker */}
+        <div className="flex items-center justify-between border-b border-white/20 pb-4 mb-6">
+          <span className="font-mono text-[10px] tracking-widest uppercase text-[#A3A3A3]">
+            SECURITY VIOLATION // 403
+          </span>
+          <ShieldAlert className="w-5 h-5 text-white" />
         </div>
 
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          ⛔ Access Denied
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight uppercase text-white mb-2">
+          Access Denied
         </h1>
-        <p className="text-base font-semibold text-red-600 mt-2">
-          You are not a team member
+        <p className="font-mono text-xs uppercase tracking-wider text-[#A3A3A3] mb-6">
+          Unregistered Account Signature
         </p>
 
-        <p className="text-sm text-slate-500 mt-4 leading-relaxed">
-          The email address you signed in with is not on the authorized team list. Only the 4 registered team members can access TeamSync.
+        <p className="font-body text-sm text-[#D4D4D4] mb-8 leading-relaxed">
+          The Google account authenticated is not registered within this workspace. Access to team availability matrices and real-time coordination is limited strictly to authorized cohort members.
         </p>
 
-        <div className="mt-6 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600 text-left space-y-1">
-          <div className="font-semibold text-slate-700">Authorized Team Members:</div>
-          {DEFAULT_MEMBERS.map((m) => (
-            <div key={m.id} className="text-slate-500">
-              • {m.name} ({m.email})
-            </div>
-          ))}
+        {/* Authorized Team List */}
+        <div className="border border-white/20 p-4 mb-8 bg-[#171717]">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-[#A3A3A3] mb-3">
+            Authorized Operators:
+          </div>
+          <ul className="space-y-1.5 font-mono text-xs text-white">
+            {DEFAULT_MEMBERS.map((m) => (
+              <li key={m.id} className="flex items-center justify-between border-b border-white/10 pb-1 last:border-0 last:pb-0">
+                <span className="font-bold">{m.name}</span>
+                <span className="text-[#A3A3A3] text-[11px]">{m.email}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mt-8 space-y-3">
+        {/* Actions */}
+        <div className="space-y-3">
           <form
             action={async () => {
               'use server';
@@ -40,22 +51,23 @@ export default function DeniedPage() {
           >
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-white text-black hover:bg-[#E5E5E5] font-mono text-xs uppercase tracking-widest transition-invert flex items-center justify-center gap-2 border border-white"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sign Out / Switch Account</span>
+              <span>Switch Account</span>
             </button>
           </form>
 
           <Link
             href="/"
-            className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 text-sm"
+            className="w-full py-3.5 px-4 bg-transparent hover:bg-white/10 text-white font-mono text-xs uppercase tracking-widest transition-invert flex items-center justify-center gap-2 border border-white/40"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Login</span>
+            <span>Return to Portal</span>
           </Link>
         </div>
       </div>
     </main>
   );
 }
+

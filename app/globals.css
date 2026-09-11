@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 html {
@@ -12,30 +14,30 @@ html {
 }
 
 body {
-  color: #111827;
-  background-color: #F8FAFC;
-  font-family: var(--font-sans);
+  color: #000000;
+  background-color: #FFFFFF;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom subtle scrollbar */
+/* Sharp architectural scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F5F5F5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
+  background: #000000;
+  border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #525252;
 }
 
 /* Table styles */
@@ -45,52 +47,52 @@ body {
   z-index: 20;
 }
 
-/* Fluid Keyframe Animations */
-@keyframes highlightRow {
+/* Subtle line texture helper */
+.bg-grid-lines {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-horizontal-lines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 23px,
+    rgba(0, 0, 0, 0.03) 23px,
+    rgba(0, 0, 0, 0.03) 24px
+  );
+}
+
+/* Monochrome animations */
+@keyframes highlightRowMono {
   0% {
-    background-color: rgba(245, 158, 11, 0.35);
+    background-color: rgba(0, 0, 0, 0.12);
   }
   100% {
     background-color: transparent;
   }
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInFast {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
 .row-updated {
-  animation: highlightRow 1.5s ease-out;
+  animation: highlightRowMono 1.2s ease-out;
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-fade-in {
+  animation: fadeInFast 0.15s ease-out forwards;
 }
 
-.animate-scale-in {
-  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Universal fluid transition helper */
-.smooth-spring {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* Quick hover inversion transition */
+.transition-invert {
+  transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
 }
 

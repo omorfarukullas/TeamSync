@@ -10,22 +10,19 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        serif: ["var(--font-serif)", "Playfair Display", "Georgia", "serif"],
+        body: ["var(--font-body)", "Source Serif 4", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+      },
       colors: {
-        navy: {
-          DEFAULT: "#1F4E79",
-          dark: "#0F2D47",
-          light: "#2E6DA4",
-          50: "#f0f6fc",
-          100: "#dbe8f5",
-          200: "#bad3ee",
-          300: "#8eb6e2",
-          400: "#5c94d3",
-          500: "#3974c0",
-          600: "#2759a4",
-          700: "#1F4E79",
-          800: "#1b3f61",
-          900: "#0F2D47",
-          950: "#081726",
+        mono: {
+          black: "#000000",
+          white: "#FFFFFF",
+          muted: "#F5F5F5",
+          "muted-fg": "#525252",
+          "border-light": "#E5E5E5",
+          "border-dark": "#000000",
         },
         status: {
           availBg: "#C6EFCE",
@@ -42,21 +39,10 @@ const config: Config = {
         },
       },
       boxShadow: {
-        glass: "0 8px 32px 0 rgba(31, 78, 121, 0.15)",
-        gold: "0 0 15px rgba(245, 158, 11, 0.35)",
+        none: "none",
       },
-      keyframes: {
-        pulseLive: {
-          "0%, 100%": { opacity: "1", transform: "scale(1)" },
-          "50%": { opacity: "0.4", transform: "scale(1.15)" },
-        },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
-      },
-      animation: {
-        pulseLive: "pulseLive 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        shimmer: "shimmer 2s infinite",
+      borderRadius: {
+        none: "0px",
       },
     },
   },

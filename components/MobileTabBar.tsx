@@ -9,27 +9,27 @@ export default function MobileTabBar() {
 
   const tabs = [
     {
-      name: 'My Schedule',
+      name: 'SCHEDULE',
       href: '/dashboard',
       icon: Calendar,
       exact: true,
     },
     {
-      name: 'Team View',
+      name: 'MATRIX',
       href: '/dashboard/team',
       icon: Users,
-      badge: 'Live',
+      badge: 'LIVE',
     },
     {
-      name: 'Team Chat',
+      name: 'CHAT',
       href: '/dashboard/chat',
       icon: MessageSquare,
     },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 shadow-lg px-2 py-1.5 pb-safe">
-      <div className="grid grid-cols-3 gap-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t-4 border-black pb-safe">
+      <div className="grid grid-cols-3 divide-x divide-black">
         {tabs.map((tab) => {
           const isActive = tab.exact
             ? pathname === tab.href
@@ -40,22 +40,19 @@ export default function MobileTabBar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl transition-all duration-150 ease-out active:scale-90 select-none relative ${
+              className={`flex flex-col items-center justify-center py-2.5 px-1 transition-invert select-none relative ${
                 isActive
-                  ? 'text-navy-700 font-bold bg-navy-50/80 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 font-medium'
+                  ? 'bg-black text-white font-bold'
+                  : 'bg-white text-black hover:bg-[#F5F5F5]'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 ${isActive ? 'text-navy-700 stroke-[2.5]' : 'text-slate-400'}`} />
-                {tab.badge && (
-                  <span className="absolute -top-1 -right-2 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
+                <Icon className="w-4 h-4" strokeWidth={2} />
+                {tab.badge && !isActive && (
+                  <span className="absolute -top-1 -right-2 w-1.5 h-1.5 bg-black" />
                 )}
               </div>
-              <span className="text-[11px] mt-1">{tab.name}</span>
+              <span className="font-mono text-[9px] uppercase tracking-wider mt-1">{tab.name}</span>
             </Link>
           );
         })}
@@ -63,3 +60,4 @@ export default function MobileTabBar() {
     </nav>
   );
 }
+

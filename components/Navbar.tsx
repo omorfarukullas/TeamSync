@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { Calendar, Users, MessageSquare, LogOut, Sparkles } from 'lucide-react';
-import Image from 'next/image';
+import { Calendar, Users, MessageSquare, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   user: {
@@ -20,19 +19,19 @@ export default function Navbar({ user }: NavbarProps) {
 
   const navTabs = [
     {
-      name: 'My Availability',
+      name: 'MY AVAILABILITY',
       href: '/dashboard',
       icon: Calendar,
       exact: true,
     },
     {
-      name: 'Team Availability',
+      name: 'TEAM MATRIX',
       href: '/dashboard/team',
       icon: Users,
-      badge: 'Live',
+      badge: 'LIVE',
     },
     {
-      name: 'Team Chat',
+      name: 'TEAM CHAT',
       href: '/dashboard/chat',
       icon: MessageSquare,
     },
@@ -53,29 +52,26 @@ export default function Navbar({ user }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+    <header className="sticky top-0 z-40 bg-white border-b-4 border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Brand / Logo */}
           <Link
             href="/dashboard"
-            className="flex items-center gap-2.5 group focus:outline-none"
+            className="flex items-center gap-3 group focus:outline-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-navy-800 to-navy-600 text-white flex items-center justify-center shadow-md shadow-navy-800/20 group-hover:scale-105 transition-transform">
-              <Calendar className="w-5 h-5" />
-            </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight text-slate-900 group-hover:text-navy-700 transition-colors flex items-center gap-1">
-                TeamSync <span className="text-lg">📅</span>
+              <span className="font-serif text-2xl font-bold tracking-widest text-black group-hover:opacity-75 transition-opacity">
+                TEAMSYNC
               </span>
-              <span className="hidden sm:inline-block text-[10px] font-semibold text-slate-400 uppercase tracking-wider -mt-1">
-                University Scheduler
+              <span className="font-mono text-[9px] text-[#525252] tracking-widest uppercase -mt-0.5">
+                University Scheduling Matrix
               </span>
             </div>
           </Link>
 
           {/* Center: Desktop Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/60">
+          <nav className="hidden md:flex items-center gap-8 h-full">
             {navTabs.map((tab) => {
               const isActive = tab.exact
                 ? pathname === tab.href
@@ -86,17 +82,16 @@ export default function Navbar({ user }: NavbarProps) {
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  className={`h-full flex items-center gap-2 text-xs font-mono tracking-wider transition-all border-b-2 ${
                     isActive
-                      ? 'bg-white text-navy-800 shadow-sm border border-slate-200/80 font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      ? 'border-black text-black font-bold'
+                      : 'border-transparent text-[#525252] hover:text-black hover:border-black/30'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-navy-700' : 'text-slate-400'}`} />
+                  <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                   <span>{tab.name}</span>
                   {tab.badge && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-mono text-[9px] font-bold px-1 py-0.2 bg-black text-white border border-black">
                       {tab.badge}
                     </span>
                   )}
@@ -106,29 +101,29 @@ export default function Navbar({ user }: NavbarProps) {
           </nav>
 
           {/* Right: User Profile & Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* User Avatar + Name */}
-            <div className="flex items-center gap-2.5 pl-2">
+            <div className="flex items-center gap-2.5">
               <div className="relative">
                 {user?.image ? (
                   <img
                     src={user.image}
                     alt={user.name || 'User'}
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-navy-600/20 shadow-sm"
+                    className="w-9 h-9 object-cover border-2 border-black"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-navy-700 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-navy-600/20">
+                  <div className="w-9 h-9 bg-black text-white flex items-center justify-center font-mono font-bold text-xs border-2 border-black">
                     {getInitials(user?.name)}
                   </div>
                 )}
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-black border border-white" />
               </div>
 
               <div className="hidden lg:flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-800 leading-tight">
-                  {user?.name || 'Team Member'}
+                <span className="font-mono text-xs font-bold text-black leading-tight">
+                  {user?.name || 'Member'}
                 </span>
-                <span className="text-[11px] font-medium text-slate-400 capitalize">
+                <span className="font-mono text-[10px] text-[#525252] uppercase tracking-wider">
                   {user?.memberId || 'Student'}
                 </span>
               </div>
@@ -138,9 +133,9 @@ export default function Navbar({ user }: NavbarProps) {
             <button
               onClick={handleLogout}
               title="Sign Out"
-              className="p-2 sm:px-3 sm:py-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100 flex items-center gap-1.5 text-xs font-semibold"
+              className="border border-black px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-black hover:bg-black hover:text-white transition-invert flex items-center gap-1.5"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" strokeWidth={2} />
               <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
@@ -149,3 +144,4 @@ export default function Navbar({ user }: NavbarProps) {
     </header>
   );
 }
+

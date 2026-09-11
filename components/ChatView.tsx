@@ -8,14 +8,11 @@ import ChatMessage from './ChatMessage';
 import {
   Send,
   MessageSquare,
-  Sparkles,
   RefreshCw,
   ArrowDown,
-  Users,
   ChevronDown,
   X,
   Hash,
-  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,11 +24,11 @@ interface ChatViewProps {
 }
 
 const QUICK_SUGGESTIONS = [
-  '📅 Updated my availability!',
-  '🕒 How about 11:11 AM?',
-  '✅ That time works for me!',
-  '👍 Sounds good to me',
-  '❓ Can everyone check Saturday?',
+  'Updated my availability matrix.',
+  'How about 11:11 AM slot?',
+  'That time window works.',
+  'Agreed, confirmed for meeting.',
+  'Can everyone review Saturday?',
 ];
 
 function getDateHeader(dateStr?: string): string {
@@ -91,7 +88,6 @@ export default function ChatView({
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isLive, setIsLive] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [showTeamPopover, setShowTeamPopover] = useState(false);
   const [showQuickDrawer, setShowQuickDrawer] = useState(false);
@@ -102,7 +98,7 @@ export default function ChatView({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const teamPopoverRef = useRef<HTMLDivElement>(null);
 
-  const { onlineMemberIds, isOnline } = usePresence();
+  const { isOnline } = usePresence();
 
   // Close team popover on outside click
   useEffect(() => {
@@ -198,13 +194,7 @@ export default function ChatView({
           });
         }
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setIsLive(true);
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          setIsLive(false);
-        }
-      });
+      .subscribe();
 
     return () => {
       supabaseClient.removeChannel(channel);
@@ -220,7 +210,6 @@ export default function ChatView({
 
     setIsSending(true);
 
-    // Optimistic message
     const tempId = `temp-${Date.now()}`;
     const optimisticMsg: ChatMessageType = {
       id: tempId,
@@ -282,25 +271,25 @@ export default function ChatView({
   const onlineCount = members.filter((m) => isOnline(m.id)).length;
 
   return (
-    <div className="relative flex flex-col h-[calc(100vh-140px)] min-h-[520px] max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className="relative flex flex-col h-[calc(100vh-140px)] min-h-[520px] max-w-4xl mx-auto bg-white border-2 border-black overflow-hidden">
       {/* ─── 1. TOPBAR / HEADER ──────────────────────────────────── */}
-      <header className="px-4 sm:px-6 py-3 border-b border-slate-200/90 bg-white/95 backdrop-blur-md flex items-center justify-between gap-3 z-20">
+      <header className="px-4 sm:px-6 py-3 border-b-2 border-black bg-white flex items-center justify-between gap-3 z-20">
         {/* Left: Channel Information */}
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
-            <Hash className="w-4 h-4 text-slate-600" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-mono font-bold text-sm flex-shrink-0 border border-black">
+            <Hash className="w-4 h-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-black text-slate-900 truncate">
-                team-coordination
+              <h2 className="font-serif text-base font-bold text-black uppercase tracking-wider truncate">
+                Team Coordination
               </h2>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                &middot; 4 members
+              <span className="hidden sm:inline-block font-mono text-[10px] uppercase text-[#525252]">
+                &middot; 4 Operators
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium truncate">
-              Synchronize schedules & group meetings in real-time
+            <p className="font-mono text-[10px] text-[#737373] uppercase tracking-widest truncate">
+              Deterministic Meeting Alignment Stream
             </p>
           </div>
         </div>
@@ -311,32 +300,27 @@ export default function ChatView({
           <button
             type="button"
             onClick={() => setShowTeamPopover((prev) => !prev)}
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-95 ${
-              showTeamPopover
-                ? 'bg-slate-100 border-slate-300 text-slate-800 ring-2 ring-slate-200'
-                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-2xs'
-            }`}
+            className="flex items-center gap-2 px-2.5 py-1.5 border border-black font-mono text-xs uppercase tracking-wider bg-white hover:bg-[#F5F5F5] transition-invert"
             title="View team member online status"
           >
-            {/* Overlapping mini avatars */}
-            <div className="flex items-center -space-x-1.5">
+            {/* Square mini avatars */}
+            <div className="flex items-center -space-x-1">
               {members.slice(0, 3).map((m) => (
                 <img
                   key={m.id}
                   src={m.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.id}`}
                   alt={m.name}
-                  className="w-5 h-5 rounded-full object-cover ring-1.5 ring-white bg-slate-100"
+                  className="w-4 h-4 object-cover border border-black bg-[#F5F5F5]"
                 />
               ))}
             </div>
 
-            <span className="flex items-center gap-1 text-[11px] font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{onlineCount}/4 Online</span>
+            <span className="text-[10px] font-bold">
+              {onlineCount}/4 ONLINE
             </span>
 
             <ChevronDown
-              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${
+              className={`w-3 h-3 text-black transition-transform duration-150 ${
                 showTeamPopover ? 'rotate-180' : ''
               }`}
             />
@@ -344,47 +328,47 @@ export default function ChatView({
 
           {/* Presence Dropdown Popover */}
           {showTeamPopover && (
-            <div className="absolute right-0 top-11 w-64 p-3 bg-white rounded-2xl shadow-xl border border-slate-200/90 animate-scale-in z-50">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-800">Team Presence</span>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
-                  {onlineCount} Active
+            <div className="absolute right-0 top-10 w-64 p-3 bg-white border-2 border-black z-50">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-black">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-black">Roster Telemetry</span>
+                <span className="font-mono text-[9px] font-bold text-black border border-black px-1.5 py-0.2 bg-[#F5F5F5]">
+                  {onlineCount} ACTIVE
                 </span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 font-mono">
                 {members.map((m) => {
                   const online = isOnline(m.id);
                   return (
                     <div
                       key={m.id}
-                      className="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors"
+                      className="flex items-center justify-between p-1.5 hover:bg-[#F5F5F5] transition-colors border border-transparent hover:border-black/20"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="relative flex-shrink-0">
                           <img
                             src={m.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.id}`}
                             alt={m.name}
-                            className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200 bg-slate-100"
+                            className="w-6 h-6 object-cover border border-black bg-[#F5F5F5]"
                           />
                           <span
-                            className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-white ${
-                              online ? 'bg-emerald-500' : 'bg-slate-300'
+                            className={`absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 border border-white ${
+                              online ? 'bg-black' : 'bg-[#A3A3A3]'
                             }`}
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-800 truncate">{m.name}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{m.id}</p>
+                          <p className="text-xs font-bold text-black truncate">{m.name}</p>
+                          <p className="text-[9px] text-[#737373] uppercase truncate">{m.id}</p>
                         </div>
                       </div>
                       <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        className={`text-[9px] font-bold uppercase px-1.5 py-0.2 border ${
                           online
-                            ? 'text-emerald-700 bg-emerald-50'
-                            : 'text-slate-400 bg-slate-100'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-[#737373] border-black/30'
                         }`}
                       >
-                        {online ? 'Online' : 'Offline'}
+                        {online ? 'ONLINE' : 'OFFLINE'}
                       </span>
                     </div>
                   );
@@ -397,11 +381,11 @@ export default function ChatView({
           <button
             onClick={fetchMessages}
             title="Refresh chat history"
-            className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
+            className="p-1.5 border border-black text-black hover:bg-black hover:text-white transition-invert"
           >
             <RefreshCw
-              className={`w-4 h-4 transition-transform duration-500 ${
-                isRefreshing ? 'rotate-180 text-navy-700' : ''
+              className={`w-3.5 h-3.5 ${
+                isRefreshing ? 'animate-spin' : ''
               }`}
             />
           </button>
@@ -412,32 +396,32 @@ export default function ChatView({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-slate-50/60 overscroll-contain"
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-[#FAFAFA] overscroll-contain"
       >
         {messages.length === 0 ? (
-          /* Empty State: Welcoming Card with Starter Quick Replies */
+          /* Empty State */
           <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 max-w-md mx-auto">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1F4E79] to-navy-700 text-white flex items-center justify-center mb-3 shadow-md shadow-navy-700/20">
-              <MessageSquare className="w-6 h-6" />
+            <div className="w-10 h-10 border border-black bg-black text-white flex items-center justify-center mb-3">
+              <MessageSquare className="w-5 h-5" />
             </div>
-            <h3 className="font-extrabold text-slate-800 text-base">
-              Welcome to Team Coordination
+            <h3 className="font-serif text-lg font-bold text-black uppercase tracking-tight">
+              Team Channel Initialized
             </h3>
-            <p className="text-xs text-slate-500 mt-1 mb-5 leading-relaxed">
-              Start coordinating meetings with Mehedi, Omor, Rayan, and Mahjabin. Tap a quick prompt below to begin:
+            <p className="font-body text-xs text-[#525252] mt-1 mb-6 leading-relaxed">
+              Live discussion channel for Mehedi, Omor, Rayan, and Mahjabin. Select a quick starter message or type below:
             </p>
 
-            <div className="w-full space-y-2">
+            <div className="w-full space-y-2 font-mono">
               {QUICK_SUGGESTIONS.slice(0, 4).map((suggestion, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleSelectQuickPrompt(suggestion)}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl bg-white hover:bg-navy-50/70 border border-slate-200/90 text-xs font-semibold text-slate-700 hover:text-navy-900 shadow-2xs hover:shadow-xs transition-all active:scale-[0.99] flex items-center justify-between group"
+                  className="w-full text-left px-3 py-2 bg-white hover:bg-black hover:text-white border border-black text-xs transition-invert flex items-center justify-between group"
                 >
                   <span className="truncate">{suggestion}</span>
-                  <span className="text-[10px] font-bold text-slate-400 group-hover:text-navy-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Use &rarr;
+                  <span className="text-[10px] uppercase font-bold text-[#737373] group-hover:text-white">
+                    SELECT &rarr;
                   </span>
                 </button>
               ))}
@@ -485,29 +469,28 @@ export default function ChatView({
             scrollToBottom('smooth');
             setShowScrollBottom(false);
           }}
-          className="absolute bottom-28 right-6 px-3.5 py-1.5 rounded-full bg-[#1F4E79] hover:bg-navy-800 active:scale-95 text-white text-xs font-bold shadow-lg border border-white/25 transition-all duration-200 flex items-center gap-1.5 z-30 animate-fade-in-up"
+          className="absolute bottom-24 right-6 px-3 py-1.5 bg-black hover:bg-[#262626] text-white text-xs font-mono uppercase tracking-wider border border-white transition-invert flex items-center gap-1.5 z-30 animate-fade-in"
         >
-          <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
-          <span>Latest</span>
+          <ArrowDown className="w-3.5 h-3.5" />
+          <span>LATEST</span>
         </button>
       )}
 
       {/* ─── 3. MODERN UNIFIED COMPOSER ──────────────────────────── */}
-      <div className="p-3 sm:p-4 bg-white border-t border-slate-200/90 z-10">
-        <div className="bg-slate-50/80 rounded-2xl border border-slate-200 focus-within:border-navy-600 focus-within:ring-2 focus-within:ring-navy-600/15 focus-within:bg-white transition-all overflow-hidden shadow-2xs">
+      <div className="p-3 sm:p-4 bg-white border-t-2 border-black z-10">
+        <div className="border border-black bg-white">
           {/* Optional Expandable Quick Suggestions Drawer */}
           {showQuickDrawer && (
-            <div className="px-3 pt-2.5 pb-1 border-b border-slate-200/70 bg-slate-100/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar animate-fade-in-up">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 flex-shrink-0 mr-1">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                Suggestions:
+            <div className="px-3 py-2 border-b border-black bg-[#F5F5F5] flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-xs">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#525252] flex-shrink-0 mr-1">
+                PROMPTS:
               </span>
               {QUICK_SUGGESTIONS.map((suggestion, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleSelectQuickPrompt(suggestion)}
-                  className="text-xs px-2.5 py-1 rounded-full bg-white hover:bg-navy-50 hover:text-navy-700 hover:border-navy-200 border border-slate-200 text-slate-600 transition-all whitespace-nowrap shadow-2xs active:scale-95 flex-shrink-0"
+                  className="px-2 py-1 bg-white hover:bg-black hover:text-white border border-black text-xs transition-invert whitespace-nowrap flex-shrink-0"
                 >
                   {suggestion}
                 </button>
@@ -515,10 +498,10 @@ export default function ChatView({
               <button
                 type="button"
                 onClick={() => setShowQuickDrawer(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/70 ml-auto flex-shrink-0"
+                className="p-1 border border-black hover:bg-black hover:text-white ml-auto flex-shrink-0 transition-invert"
                 title="Close suggestions"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           )}
@@ -532,41 +515,32 @@ export default function ChatView({
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={500}
-              placeholder="Message #team-coordination..."
-              className="w-full py-1.5 px-2 bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 min-h-[38px] max-h-28 overflow-y-auto"
+              placeholder="Broadcast message to team..."
+              className="w-full py-1 px-1 bg-transparent resize-none outline-none font-body text-xs sm:text-sm text-black placeholder:text-[#A3A3A3] min-h-[38px] max-h-28 overflow-y-auto"
             />
 
             {/* Composer Toolbar (Bottom Row) */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 mt-1">
-              {/* Left: Quick Replies launcher & keyboard hint */}
+            <div className="flex items-center justify-between pt-2 border-t border-black/20 mt-1 font-mono">
+              {/* Left: Quick Replies launcher */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowQuickDrawer((prev) => !prev)}
-                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    showQuickDrawer
-                      ? 'bg-amber-100/70 text-amber-800 border border-amber-300/80'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
-                  }`}
+                  className="px-2 py-1 border border-black text-xs uppercase tracking-wider text-black hover:bg-black hover:text-white transition-invert flex items-center gap-1"
                   title="Toggle Quick Scheduling Replies"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-[11px] font-bold">Quick Replies</span>
+                  <span className="text-[10px] font-bold">QUICK PROMPTS</span>
                 </button>
 
-                <span className="hidden sm:inline text-[11px] text-slate-400">
-                  &middot; <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 font-mono text-[9px]">Enter</kbd> to send
+                <span className="hidden sm:inline text-[10px] text-[#737373] uppercase tracking-wider">
+                  &middot; [ENTER] TO SEND
                 </span>
               </div>
 
               {/* Right: Character count & Send button */}
               <div className="flex items-center gap-2">
                 {inputText.length > 0 && (
-                  <span
-                    className={`text-[10px] font-mono ${
-                      inputText.length > 450 ? 'text-rose-500 font-bold' : 'text-slate-400'
-                    }`}
-                  >
+                  <span className="text-[10px] font-mono text-[#737373]">
                     {inputText.length}/500
                   </span>
                 )}
@@ -574,10 +548,10 @@ export default function ChatView({
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isSending}
-                  className="px-3.5 py-1.5 bg-[#1F4E79] hover:bg-[#163a5c] active:scale-95 text-white font-bold rounded-xl shadow-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-xs h-[34px]"
+                  className="px-4 py-1.5 bg-black hover:bg-[#262626] text-white font-mono text-xs uppercase tracking-widest transition-invert disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 border border-black"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Send</span>
+                  <Send className="w-3 h-3" />
+                  <span>TRANSMIT</span>
                 </button>
               </div>
             </div>
@@ -587,4 +561,5 @@ export default function ChatView({
     </div>
   );
 }
+
 

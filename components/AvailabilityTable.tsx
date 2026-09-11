@@ -6,7 +6,7 @@ import { DAYS, TIME_SLOTS, STATUS_CONFIG, TOTAL_SLOTS } from '@/lib/constants';
 import { AvailabilityRecord, AvailabilityStatus, Member } from '@/lib/types';
 import StatusSelector from './StatusSelector';
 import ProgressCounter from './ProgressCounter';
-import { Check, Clock, UserCheck, ShieldAlert, Eye, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AvailabilityTableProps {
   currentMemberId: string;
@@ -24,7 +24,7 @@ export default function AvailabilityTable({
   const [selectedMemberId, setSelectedMemberId] = useState<string>(currentMemberId);
   const [records, setRecords] = useState<AvailabilityRecord[]>(initialAvailability);
   const [savingKey, setSavingKey] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>(
     DAYS.reduce((acc, day) => ({ ...acc, [day]: true }), {})
   );
@@ -32,7 +32,6 @@ export default function AvailabilityTable({
   const toggleDay = (day: string) => {
     setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
   };
-
 
   const isSelf = selectedMemberId === currentMemberId;
   const selectedMember = allMembers.find((m) => m.id === selectedMemberId) || {
@@ -50,7 +49,7 @@ export default function AvailabilityTable({
 
   // Auto-save status change immediately
   const handleStatusChange = async (day: string, timeSlot: string, newStatus: AvailabilityStatus) => {
-    if (!isSelf) return; // Read-only for other members
+    if (!isSelf) return;
 
     const key = `${day}-${timeSlot}`;
     setSavingKey(key);
@@ -120,7 +119,7 @@ export default function AvailabilityTable({
 
     const currentRec = getRecord(day, timeSlot);
     const oldRemarks = currentRec?.remarks || '';
-    if (oldRemarks === newRemarks) return; // No change
+    if (oldRemarks === newRemarks) return;
 
     const key = `${day}-${timeSlot}`;
     setSavingKey(key);
@@ -142,7 +141,6 @@ export default function AvailabilityTable({
         throw new Error(result.error || 'Failed to save remarks');
       }
 
-      // Update local state
       setRecords((prev) => {
         const idx = prev.findIndex(
           (r) => r.member_id === currentMemberId && r.day === day && r.time_slot === timeSlot
@@ -165,7 +163,7 @@ export default function AvailabilityTable({
         ];
       });
 
-      toast.success(`Note saved ✓`, { duration: 1800 });
+      toast.success(`Note saved`, { duration: 1800 });
     } catch (err) {
       console.error('Error saving remarks:', err);
       toast.error('Failed to save remarks.');
@@ -174,27 +172,29 @@ export default function AvailabilityTable({
     }
   };
 
-  // Count filled slots for the currently viewed member
   const memberRecords = records.filter((r) => r.member_id === selectedMemberId);
   const filledCount = memberRecords.filter((r) => Boolean(r.status)).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Top Controls: Member Selector for Read-only inspection + Progress */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-black pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            Weekly Availability
+          <span className="font-mono text-[10px] tracking-widest uppercase text-[#525252] block mb-1">
+            INDIVIDUAL MATRIX ENTRY
+          </span>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-black uppercase">
+            Schedule Entry
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+          <p className="font-body text-xs sm:text-sm text-[#525252] mt-1">
             {isSelf
-              ? `Click a status to immediately save your schedule. All ${TOTAL_SLOTS} slots are required.`
-              : `Viewing ${selectedMember.name}'s schedule (Read-only).`}
+              ? `Select status per cell to persist schedule instantly. All ${TOTAL_SLOTS} slots required.`
+              : `Inspecting ${selectedMember.name}'s schedule in read-only telemetry mode.`}
           </p>
         </div>
 
-        {/* Member View Switcher (Self + Read-only team members) */}
-        <div className="flex items-center gap-1.5 p-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto max-w-full">
+        {/* Member View Switcher */}
+        <div className="flex items-center border border-black p-0.5 bg-white overflow-x-auto max-w-full">
           {allMembers.map((member) => {
             const isSelected = selectedMemberId === member.id;
             const isUserSelf = member.id === currentMemberId;
@@ -203,16 +203,16 @@ export default function AvailabilityTable({
               <button
                 key={member.id}
                 onClick={() => setSelectedMemberId(member.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-invert ${
                   isSelected
-                    ? 'bg-navy-700 text-white shadow-md shadow-navy-700/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-black text-white font-bold'
+                    : 'bg-white text-black hover:bg-[#F5F5F5]'
                 }`}
               >
                 <span>{member.name}</span>
                 {isUserSelf ? (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-white/20 text-white font-semibold">
-                    You
+                  <span className="text-[9px] px-1 bg-white/20 text-white font-bold border border-white/30">
+                    YOU
                   </span>
                 ) : (
                   <Eye className="w-3 h-3 opacity-60" />
@@ -223,7 +223,7 @@ export default function AvailabilityTable({
         </div>
       </div>
 
-      {/* Progress Counter Card */}
+      {/* Progress Counter */}
       <ProgressCounter
         filledCount={filledCount}
         totalCount={TOTAL_SLOTS}
@@ -233,18 +233,18 @@ export default function AvailabilityTable({
 
       {/* Mode Indicator Banner */}
       {!isSelf && (
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-3 text-xs font-semibold text-amber-800">
+        <div className="p-4 bg-black text-white border border-black flex items-center justify-between gap-3 text-xs font-mono">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-amber-600" />
+            <Eye className="w-4 h-4 text-white" />
             <span>
-              You are in <strong>Read-Only</strong> mode inspecting {selectedMember.name}&apos;s schedule.
+              READ-ONLY MODE: Inspecting <strong>{selectedMember.name}</strong>&apos;s schedule.
             </span>
           </div>
           <button
             onClick={() => setSelectedMemberId(currentMemberId)}
-            className="px-3 py-1 bg-amber-200/70 hover:bg-amber-300 text-amber-900 rounded-lg transition-colors font-bold"
+            className="px-3 py-1 bg-white text-black border border-white hover:bg-[#E5E5E5] transition-invert font-mono text-xs uppercase tracking-wider font-bold"
           >
-            Switch to My Schedule
+            My Schedule &rarr;
           </button>
         </div>
       )}
@@ -260,34 +260,28 @@ export default function AvailabilityTable({
           return (
             <div
               key={day}
-              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden"
+              className="bg-white border-2 border-black overflow-hidden"
             >
               {/* Day Accordion Header */}
               <button
                 type="button"
                 onClick={() => toggleDay(day)}
-                className="w-full py-3.5 px-4 bg-[#1F4E79] text-white flex items-center justify-between text-left transition-colors hover:bg-navy-800"
+                className="w-full py-3.5 px-4 bg-black text-white flex items-center justify-between text-left border-b border-black"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="font-extrabold text-base tracking-tight">{day}</span>
-                  <span
-                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                      daySlotsFilled === TIME_SLOTS.length
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-white/20 text-navy-100'
-                    }`}
-                  >
-                    {daySlotsFilled}/{TIME_SLOTS.length} Set
+                  <span className="font-serif text-base font-bold uppercase tracking-wider">{day}</span>
+                  <span className="font-mono text-[9px] uppercase px-2 py-0.5 bg-white text-black border border-white font-bold">
+                    {daySlotsFilled}/{TIME_SLOTS.length} SET
                   </span>
                 </div>
-                <div className="text-white/80">
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                <div className="text-white">
+                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </div>
               </button>
 
               {/* Slot Cards List */}
               {isExpanded && (
-                <div className="p-3 space-y-3 bg-slate-50/50">
+                <div className="p-3 space-y-3 bg-[#FAFAFA]">
                   {TIME_SLOTS.map((timeSlot) => {
                     const record = getRecord(day, timeSlot);
                     const status = record?.status;
@@ -295,40 +289,29 @@ export default function AvailabilityTable({
                     const key = `${day}-${timeSlot}`;
                     const isSaving = savingKey === key;
 
-                    // Left border color & card background
-                    let cardBorder = 'border-l-4 border-l-slate-300 bg-white';
-                    if (status === 'available') {
-                      cardBorder = 'border-l-4 border-l-[#70AD47] bg-emerald-50/40';
-                    } else if (status === 'not_available') {
-                      cardBorder = 'border-l-4 border-l-[#FF0000] bg-rose-50/40';
-                    } else if (status === 'maybe') {
-                      cardBorder = 'border-l-4 border-l-[#FFAB00] bg-amber-50/40';
-                    }
-
                     return (
                       <div
                         key={key}
-                        className={`rounded-2xl p-3.5 border border-slate-200/80 shadow-xs space-y-2.5 ${cardBorder}`}
+                        className="p-3.5 border border-black bg-white space-y-2.5"
                       >
                         {/* Time Slot Label + Status Indicator */}
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs sm:text-sm">
-                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 font-mono font-bold text-black text-xs">
+                            <Clock className="w-3.5 h-3.5 text-[#525252] shrink-0" />
                             <span>{timeSlot}</span>
                           </div>
 
                           {isSaving ? (
-                            <span className="text-[11px] font-bold text-navy-700 animate-pulse flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-navy-700 animate-ping" />
-                              Saving...
+                            <span className="font-mono text-[10px] uppercase font-bold text-black animate-pulse">
+                              SAVING...
                             </span>
                           ) : status ? (
-                            <span className="text-[11px] font-bold text-slate-600">
+                            <span className="font-mono text-[10px] uppercase font-bold text-black">
                               {STATUS_CONFIG[status]?.emoji} {STATUS_CONFIG[status]?.label}
                             </span>
                           ) : (
-                            <span className="text-[11px] font-medium text-slate-400">
-                              Not set
+                            <span className="font-mono text-[10px] uppercase text-[#737373]">
+                              NOT SET
                             </span>
                           )}
                         </div>
@@ -350,12 +333,12 @@ export default function AvailabilityTable({
                             defaultValue={remarks}
                             placeholder="Add remark (e.g., Lab free, Exam)..."
                             onBlur={(e) => handleRemarksBlur(day, timeSlot, e.target.value.trim())}
-                            className="w-full px-3 py-2 text-xs font-medium rounded-xl border border-slate-300/80 bg-white focus:border-navy-600 focus:ring-2 focus:ring-navy-600/20 placeholder:text-slate-400 transition-all outline-none"
+                            className="w-full px-2 py-1 text-xs font-mono border-b-2 border-black rounded-none bg-transparent focus:bg-white outline-none placeholder:text-[#A3A3A3]"
                           />
                         ) : (
                           remarks && (
-                            <div className="text-xs text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 font-medium">
-                              <span className="text-slate-400 font-semibold mr-1">Note:</span> {remarks}
+                            <div className="font-mono text-xs text-black border-t border-black/10 pt-1">
+                              <span className="text-[#525252] font-semibold mr-1">Note:</span> {remarks}
                             </div>
                           )
                         )}
@@ -369,45 +352,45 @@ export default function AvailabilityTable({
         })}
 
         {/* Mobile Quick Legend */}
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-2">
-          <span className="font-bold text-slate-800 block">Status Legend:</span>
-          <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-            <span className="px-2 py-1 rounded-lg bg-[#C6EFCE] text-[#375623] font-bold text-center">
-              ✅ Available (+2)
+        <div className="p-3.5 bg-white border border-black font-mono text-xs text-black space-y-2">
+          <span className="font-bold uppercase tracking-wider block">Status Legend:</span>
+          <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+            <span className="px-2 py-1 bg-[#C6EFCE] text-[#375623] border border-[#70AD47] font-bold text-center">
+              ✓ Avail (+2)
             </span>
-            <span className="px-2 py-1 rounded-lg bg-[#FFEB9C] text-[#7D4E00] font-bold text-center">
-              ⚠️ Maybe (+1)
+            <span className="px-2 py-1 bg-[#FFEB9C] text-[#7D4E00] border border-[#FFAB00] font-bold text-center">
+              ? Maybe (+1)
             </span>
-            <span className="px-2 py-1 rounded-lg bg-[#FFC7CE] text-[#9C0006] font-bold text-center">
-              ❌ Not Avail (0)
+            <span className="px-2 py-1 bg-[#FFC7CE] text-[#9C0006] border border-[#FF0000] font-bold text-center">
+              ✗ Not Avail (0)
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main Desktop Availability 25-Slot Table (hidden on mobile, visible on md+) */}
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+      {/* Main Desktop Availability Table */}
+      <div className="hidden md:block bg-white border-2 border-black overflow-hidden">
         <div className="overflow-x-auto max-h-[70vh]">
           <table className="w-full min-w-[620px] text-left border-collapse">
             {/* Frozen Header Row */}
-            <thead className="sticky top-0 z-30 bg-[#1F4E79] text-white shadow-sm">
+            <thead className="sticky top-0 z-30 bg-black text-white">
               <tr>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-36 border-r border-navy-800">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider w-36 border-r border-white/20">
                   Day
                 </th>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-44 border-r border-navy-800">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider w-44 border-r border-white/20">
                   Time Slot
                 </th>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-r border-navy-800">
-                  Availability {isSelf && <span className="text-[10px] lowercase text-navy-200 font-normal">(auto-saves)</span>}
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider border-r border-white/20">
+                  Availability {isSelf && <span className="text-[10px] text-[#A3A3A3] font-normal">(auto-saves)</span>}
                 </th>
-                <th className="py-3.5 px-4 text-xs font-bold uppercase tracking-wider w-52 sm:w-64">
+                <th className="py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider w-56 sm:w-72">
                   Remarks / Notes
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-200/80 text-sm">
+            <tbody className="divide-y divide-black/20 text-sm">
               {DAYS.map((day) => {
                 return TIME_SLOTS.map((timeSlot, slotIndex) => {
                   const record = getRecord(day, timeSlot);
@@ -416,46 +399,46 @@ export default function AvailabilityTable({
                   const key = `${day}-${timeSlot}`;
                   const isSaving = savingKey === key;
 
-                  // Row background styling based on status
-                  let rowBgClass = 'bg-[#F5F5F5] hover:bg-[#EFEFEF]';
+                  // Data-ink row status styling
+                  let rowBgClass = 'bg-[#F5F5F5] hover:bg-[#EBEBEB]';
                   if (status === 'available') {
-                    rowBgClass = 'bg-[#C6EFCE]/90 hover:bg-[#BDE8C5]';
+                    rowBgClass = 'bg-[#C6EFCE]/85 hover:bg-[#BBE4C3]';
                   } else if (status === 'not_available') {
-                    rowBgClass = 'bg-[#FFC7CE]/90 hover:bg-[#F8BAC1]';
+                    rowBgClass = 'bg-[#FFC7CE]/85 hover:bg-[#F3BAC1]';
                   } else if (status === 'maybe') {
-                    rowBgClass = 'bg-[#FFEB9C]/90 hover:bg-[#F5DF8E]';
+                    rowBgClass = 'bg-[#FFEB9C]/85 hover:bg-[#F3DE8E]';
                   }
 
                   return (
                     <tr
                       key={key}
-                      className={`transition-colors duration-150 ${rowBgClass}`}
+                      className={`transition-colors duration-100 ${rowBgClass}`}
                     >
-                      {/* Day Column (merged/rowspan=5 for first slot of the day) */}
+                      {/* Day Column (merged/rowspan for first slot of the day) */}
                       {slotIndex === 0 && (
                         <td
                           rowSpan={TIME_SLOTS.length}
-                          className="py-4 px-4 bg-[#1F4E79] text-white font-extrabold text-base align-middle text-center border-r border-navy-800 border-b-2 border-b-white/20 select-none"
+                          className="py-4 px-4 bg-black text-white font-serif font-bold text-base align-middle text-center border-r-2 border-black border-b-2 border-b-white/20 select-none uppercase tracking-wider"
                         >
                           <div className="flex flex-col items-center justify-center gap-1">
                             <span>{day}</span>
-                            <span className="text-[10px] font-medium text-navy-200 uppercase tracking-widest bg-navy-900/60 px-2 py-0.5 rounded-full">
-                              {TIME_SLOTS.length} Slots
+                            <span className="font-mono text-[9px] uppercase tracking-widest bg-white text-black px-2 py-0.5 border border-white font-bold">
+                              {TIME_SLOTS.length} SLOTS
                             </span>
                           </div>
                         </td>
                       )}
 
                       {/* Time Slot Column */}
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 border-r border-slate-200/70 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono text-xs font-semibold text-black border-r border-black/20 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <Clock className="w-3.5 h-3.5 text-[#525252]" />
                           <span>{timeSlot}</span>
                         </div>
                       </td>
 
                       {/* Availability Selector Column */}
-                      <td className="py-2.5 px-4 border-r border-slate-200/70">
+                      <td className="py-2.5 px-4 border-r border-black/20">
                         <div className="flex items-center gap-3">
                           <StatusSelector
                             value={status}
@@ -464,15 +447,14 @@ export default function AvailabilityTable({
                             readOnly={!isSelf}
                           />
                           {isSaving && (
-                            <span className="text-xs font-semibold text-navy-700 animate-pulse flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-navy-700 animate-ping" />
-                              Saving...
+                            <span className="font-mono text-[10px] uppercase font-bold text-black animate-pulse">
+                              SAVING...
                             </span>
                           )}
                         </div>
                       </td>
 
-                      {/* Remarks Column (auto-save on blur) */}
+                      {/* Remarks Column */}
                       <td className="py-2.5 px-4">
                         {isSelf ? (
                           <input
@@ -481,10 +463,10 @@ export default function AvailabilityTable({
                             defaultValue={remarks}
                             placeholder="Add remark (e.g., Lab free)..."
                             onBlur={(e) => handleRemarksBlur(day, timeSlot, e.target.value.trim())}
-                            className="w-full px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-300/80 bg-white/80 focus:bg-white focus:border-navy-600 focus:ring-2 focus:ring-navy-600/20 placeholder:text-slate-400 transition-all outline-none"
+                            className="w-full px-2 py-1 text-xs font-mono border-b-2 border-black rounded-none bg-transparent focus:bg-white outline-none placeholder:text-[#A3A3A3]"
                           />
                         ) : (
-                          <span className="text-xs font-medium text-slate-600 italic">
+                          <span className="font-mono text-xs text-black">
                             {remarks || '—'}
                           </span>
                         )}
@@ -498,28 +480,29 @@ export default function AvailabilityTable({
         </div>
 
         {/* Footer Summary / Quick Legend */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 font-medium">
+        <div className="p-4 bg-white border-t-2 border-black flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-black">
           <div className="flex items-center gap-4 flex-wrap">
-            <span className="font-bold text-slate-700">Status Legend:</span>
+            <span className="font-bold uppercase tracking-wider">Legend:</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#C6EFCE] border border-[#70AD47]" />
-              <span>✅ Available (+2 pts)</span>
+              <span className="w-3 h-3 border border-[#70AD47] bg-[#C6EFCE]" />
+              <span>Available (+2 pts)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#FFEB9C] border border-[#FFAB00]" />
-              <span>⚠️ Maybe (+1 pt)</span>
+              <span className="w-3 h-3 border border-[#FFAB00] bg-[#FFEB9C]" />
+              <span>Maybe (+1 pt)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#FFC7CE] border border-[#FF0000]" />
-              <span>❌ Not Available (0 pts)</span>
+              <span className="w-3 h-3 border border-[#FF0000] bg-[#FFC7CE]" />
+              <span>Not Available (0 pts)</span>
             </div>
           </div>
 
-          <span className="text-slate-400 text-[11px]">
-            Changes synchronize automatically to Supabase.
+          <span className="text-[#525252] text-[10px] uppercase tracking-wider">
+            Changes persist automatically to cloud.
           </span>
         </div>
       </div>
     </div>
   );
 }
+
