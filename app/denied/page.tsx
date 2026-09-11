@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { signOut } from '@/lib/auth';
 import { ShieldAlert, ArrowLeft, LogOut } from 'lucide-react';
+import { DEFAULT_MEMBERS } from '@/lib/constants';
 
 export default function DeniedPage() {
   return (
@@ -23,10 +24,11 @@ export default function DeniedPage() {
 
         <div className="mt-6 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600 text-left space-y-1">
           <div className="font-semibold text-slate-700">Authorized Team Members:</div>
-          <div className="text-slate-500">• mehedi@gmail.com</div>
-          <div className="text-slate-500">• omor@gmail.com</div>
-          <div className="text-slate-500">• rayan@gmail.com</div>
-          <div className="text-slate-500">• mahjabin@gmail.com</div>
+          {DEFAULT_MEMBERS.map((m) => (
+            <div key={m.id} className="text-slate-500">
+              • {m.name} ({m.email})
+            </div>
+          ))}
         </div>
 
         <div className="mt-8 space-y-3">

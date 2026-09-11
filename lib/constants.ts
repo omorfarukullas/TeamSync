@@ -75,7 +75,7 @@ export const STATUS_CONFIG: Record<
 export const DEFAULT_MEMBERS: Member[] = [
   { id: 'mehedi', name: 'Mehedi', email: 'abdmehedizs@gmail.com' },
   { id: 'omor', name: 'Omor', email: 'omor.farukh16@gmail.com' },
-  { id: 'rayan', name: 'Rayan', email: 'rayan.rah@gmail.com' },
+  { id: 'rayan', name: 'Rayan', email: 'rayan.rah57@gmail.com' },
   { id: 'mahjabin', name: 'Mahjabin', email: 'mahjabinkhan220619@gmail.com' },
 ];
 
