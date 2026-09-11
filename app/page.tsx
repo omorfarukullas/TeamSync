@@ -52,7 +52,7 @@ export default async function LoginPage() {
         </div>
 
         <footer className="w-full text-center font-mono text-[10px] text-[#737373] tracking-wider uppercase border-t border-black/10 pt-4">
-          TeamSync &copy; {new Date().getFullYear()} &middot; University Team Scheduler
+          TeamSync &copy; {new Date().getFullYear()} &middot; Omor Faruk
         </footer>
       </section>
     </main>
