@@ -4,15 +4,20 @@ import Credentials from 'next-auth/providers/credentials';
 import { DEFAULT_MEMBERS } from './constants';
 import { updateMemberAvatar } from './supabase-server';
 
-function getAllowedEmails(): string[] {
+export function getAllowedEmails(): string[] {
+  // Always include DEFAULT_MEMBERS as the authoritative base list
+  const baseEmails = DEFAULT_MEMBERS.map((m) => m.email.toLowerCase().trim());
   const envEmails = process.env.ALLOWED_EMAILS;
   if (!envEmails) {
-    return DEFAULT_MEMBERS.map((m) => m.email.toLowerCase());
+    return baseEmails;
   }
-  return envEmails
+  // Merge env var additions with the base list (env var can add, not replace)
+  const envList = envEmails
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+
+  return Array.from(new Set([...baseEmails, ...envList]));
 }
 
 export function getMemberByEmail(email: string) {
